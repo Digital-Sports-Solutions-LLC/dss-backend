@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First HTML File</title>
+</head>
+<body>
+    <h1>Macthes</h1>
+    <a href="create">
+        <button>Create</button>
+    </a>
+    <ul>
+        {% for x in mymatches %}
+            <li>{{x.team1}} {{"vs"}} {{x.team2}} {{"@"}} {{x.tournament}}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
