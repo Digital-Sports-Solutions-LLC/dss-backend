@@ -1,4 +1,6 @@
 from django.db import models
+from django import forms
+import datetime
 
 # Create your models here.
 class Match(models.Model):
@@ -16,3 +18,11 @@ class Match(models.Model):
     
     def __str__(self):
         return self.team1 + ' vs ' + self.team2 + ' @ ' + self.tournament
+    
+class MatchForm(forms.ModelForm):
+
+    class Meta:
+        model = Match
+        fields = ['team1', 'team2', 'team1Score', 'team2Score', 'tournament', 'court', 'datetime', 'status', 'livestreamLink', 'refereeCode', 'style']
+
+

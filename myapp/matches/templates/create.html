@@ -6,16 +6,44 @@
 <body>
     <h1>Create Match</h1>
     
-    <form method="POST">        
-        <label for="title">Title:</label>
-        <input type="text" id="title" name="title" required>
+    <form method="POST" action="http://127.0.0.1:8000/matches/create/">    
+        {% csrf_token %}
+
+        <label for="team1">Team 1:</label>
+        <input type="text" id="team1" name="team1" required><br>
+
+        <label for="team2">Team 2:</label>
+        <input type="text" id="team2" name="team2" required><br>
+
+        <label for="team1Score">Team 1 Score:</label>
+        <input type="number" id="team1Score" name="team1Score" value="0" required><br>
+
+        <label for="team2Score">Team 2 Score:</label>
+        <input type="number" id="team2Score" name="team2Score" value="0" required><br>
+
+        <label for="tournament">Tournament:</label>
+        <input type="text" id="tournament" name="tournament" required><br>
+
+        <label for="court">Court:</label>
+        <input type="number" id="court" name="court" required><br>
         
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required>
+        <label for="datetime">Date and Time:</label>
+        <input type="datetime-local" id="datetime" name="datetime" required><br>
         
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" required>
-        
+        <label for="livestream-link">Livestream Link:</label>
+        <input type="text" id="livestream-link" name="livestreamLink" placeholder="Livestream Link"><br>
+
+        <label for="referee-code">Referee Code:</label>
+        <input type="number" id="referee-code" name="refereeCode" required><br>
+
+        <label for="style">Style:</label>  
+        <select id="style" name="style" required>
+            <option value="ncda">NCDA</option>
+            <option value="nda">NDA</option>
+        </select><br>
+
+        <input type="hidden" id="status" name="status" value="Waiting">
+
         <button type="submit">Create</button>
     </form>
 </body>
