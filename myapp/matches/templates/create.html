@@ -13,13 +13,7 @@
         <input type="text" id="team1" name="team1" required><br>
 
         <label for="team2">Team 2:</label>
-        <input type="text" id="team2" name="team2" required><br>
-
-        <label for="team1Score">Team 1 Score:</label>
-        <input type="number" id="team1Score" name="team1Score" value="0" required><br>
-
-        <label for="team2Score">Team 2 Score:</label>
-        <input type="number" id="team2Score" name="team2Score" value="0" required><br>
+        <input type="text" id="team2" name="team2" required><br>       
 
         <label for="tournament">Tournament:</label>
         <input type="text" id="tournament" name="tournament" required><br>
@@ -42,6 +36,8 @@
             <option value="nda">NDA</option>
         </select><br>
 
+        <input type="hidden" id="team1Score" name="team1Score" value="0" required><br>
+        <input type="hidden" id="team2Score" name="team2Score" value="0" required><br>
         <input type="hidden" id="status" name="status" value="Waiting">
 
         <button type="submit">Create</button>

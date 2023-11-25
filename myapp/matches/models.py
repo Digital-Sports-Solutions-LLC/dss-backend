@@ -4,6 +4,7 @@ import datetime
 
 # Create your models here.
 class Match(models.Model):
+    matchid = models.AutoField(primary_key=True)
     team1 = models.CharField(max_length=100)
     team2 = models.CharField(max_length=100)
     team1Score = models.IntegerField()
