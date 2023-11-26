@@ -6,7 +6,7 @@ from .models import Match, MatchForm
 def matches(request):
     mymatches = Match.objects.all().values()
     context = {
-        'mymatches': mymatches,
+        'matches': mymatches,
     }
     template = loader.get_template('matches.html')
     return HttpResponse(template.render(context, request))
@@ -27,4 +27,12 @@ def create(request):
     }
     
     template = loader.get_template('create.html')
+    return HttpResponse(template.render(context, request))
+
+def match(request, pk):
+    mymatch = Match.objects.filter(pk=pk).values()
+    context = {
+        'match': mymatch,
+    }
+    template = loader.get_template('match.html')
     return HttpResponse(template.render(context, request))

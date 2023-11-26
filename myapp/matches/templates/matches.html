@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Macthes</title>
+    <title>Matches</title>
 </head>
 <body>
-    <h1>Macthes</h1>
+    <h1>Matches</h1>
     <a href="create">
         <button>Create</button>
     </a>
     <ul>
-        {% for x in mymatches %}
-            <li>{{x.team1}} {{"vs"}} {{x.team2}} {{"@"}} {{x.tournament}}</li>
+        {% for match in matches %}
+            <li>
+                <a href="{% url 'match' match.matchid %}">
+                    {{ match.team1 }} vs {{ match.team2 }} @ {{ match.tournament }}
+                </a>
+                - Status: {{ match.status }}
+            </li>
         {% endfor %}
     </ul>
 </body>
 </html>
+

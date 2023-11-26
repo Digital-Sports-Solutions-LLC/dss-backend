@@ -23,4 +23,5 @@ urlpatterns = [
     path('create/', views.create, name='create'),
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('<int:pk>', views.match, name='match'),
 ]
