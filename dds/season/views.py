@@ -1,3 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import rendergenerics
+from rest_framework import generics
+from .models import SEASON
+from .serializers import SeasonSerializer
 
-# Create your views here.
+class SeasonListCreateView(generics.ListCreateAPIView):
+    queryset = SEASON.objects.all()
+    serializer_class = SeasonSerializer
+
+class SeasonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SEASON.objects.all()
+    serializer_class = SeasonSerializer
