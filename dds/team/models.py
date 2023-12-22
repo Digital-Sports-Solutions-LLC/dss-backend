@@ -10,7 +10,7 @@ class TEAM(models.Model):
     league = models.ForeignKey(LEAGUE, on_delete=models.CASCADE)
     location = models.ForeignKey(LOCATION, on_delete=models.CASCADE)
     yearFounded = models.PositiveIntegerField(validators=[MaxValueValidator(9999)])
-    graphic = models.CharField(max_length=100, null=True, blank=True)
+    graphic = models.ImageField(upload_to='images/', null=True, blank=True)
     active = models.BooleanField(default=True)
     yearDisbanded = models.PositiveIntegerField(validators=[MaxValueValidator(9999)], null=True, blank=True)
     
