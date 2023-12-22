@@ -6,8 +6,8 @@ class LEAGUE(models.Model):
     name = models.CharField(max_length=100)
     acronym = models.CharField(max_length=10)
     yearFounded = models.PositiveIntegerField(validators=[MaxValueValidator(9999)])
-    graphic = models.CharField(max_length=100, null=True, blank=True)
-    altGraphic = models.CharField(max_length=100, null=True, blank=True)
+    graphic = models.ImageField(upload_to='images/', null=True, blank=True)
+    altGraphic = models.ImageField(upload_to='images/', null=True, blank=True)
         
     def __str__(self):
         return f"{self.name}"
