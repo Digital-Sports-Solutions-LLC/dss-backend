@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.validators import MaxValueValidator
 from event.models import EVENT
 
 class COURT(models.Model):

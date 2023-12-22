@@ -1,16 +1,24 @@
 from rest_framework import serializers
-from .models import TEAM
+from .models import EVENT
+from season.serializers import SeasonSerializer
 from league.serializers import LeagueSerializer
 from location.serializers import LocationSerializer
+from event_type.serializers import Event_TypeSerializer
 
-class TeamSerializer(serializers.ModelSerializer):
+
+class EventSerializer(serializers.ModelSerializer):
+    season = SeasonSerializer()
     league = LeagueSerializer()
     location = LocationSerializer()
+    event_type = Event_TypeSerializer()
+    
     class Meta:
-        model = TEAM
+        model = EVENT
         fields = '__all__'
+        season = None
         league = None
         location = None
+        event_type = None
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -21,9 +29,5 @@ class TeamSerializer(serializers.ModelSerializer):
             if request is not None:
                 domain = request.get_host()
                 representation['graphic'] = f"http://{domain}/media/images/file-not-found.jpg"
-                
-        # Check if 'yearDisbanded' is None and set it to "n/a" if it is
-        if representation.get('yearDisbanded') is None:
-            representation['yearDisbanded'] = "n/a"
-                
+    
         return representation
