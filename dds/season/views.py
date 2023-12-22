@@ -1,4 +1,4 @@
-from django.shortcuts import rendergenerics
+from django.shortcuts import render
 from rest_framework import generics
 from .models import SEASON
 from .serializers import SeasonSerializer

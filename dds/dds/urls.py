@@ -23,7 +23,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('league/', include('league.urls')),
-    path('match/', include('match.urls')),
+    path('season/', include('season.urls')),
+    path('league_season/', include('league_season.urls')),
+    
+    # path('match/', include('match.urls')),
 ]
 
 if settings.DEBUG:
