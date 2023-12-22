@@ -27,9 +27,8 @@ urlpatterns = [
     path('league_season/', include('league_season.urls')),
     path('location/', include('location.urls')),
     path('team/', include('team.urls')),
-    path('event/', include('event.urls')),
+    path('role/', include('role.urls')),
     path('event_type/', include('event_type.urls')),
-    path('court/', include('court.urls')),
     
     # path('match/', include('match.urls')),
 ]
