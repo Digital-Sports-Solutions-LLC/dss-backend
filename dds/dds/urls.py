@@ -28,6 +28,7 @@ urlpatterns = [
     path('location/', include('location.urls')),
     path('team/', include('team.urls')),
     path('role/', include('role.urls')),
+    path('event_type/', include('event_type.urls')),
     
     # path('match/', include('match.urls')),
 ]
