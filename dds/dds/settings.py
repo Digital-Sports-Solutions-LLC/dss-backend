@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-#65d+3_f(&aen1az06_bb&h_yjubp_%@68o!$2fbpgbo)ch$kf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1']
+ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1',]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:50383',
+]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT= os.path.join(BASE_DIR,"media/")
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'league',
     'season',
@@ -57,8 +62,7 @@ INSTALLED_APPS = [
     'court',
     'match',
     'point',
-    'timeout'
-
+    'timeout',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +73,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'dds.urls'
