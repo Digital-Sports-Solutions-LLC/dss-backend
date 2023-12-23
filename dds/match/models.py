@@ -11,7 +11,7 @@ class MATCH(models.Model):
     match_type = models.ForeignKey(MATCH_TYPE, on_delete=models.CASCADE)
     status = models.CharField(max_length=100)
     startTime = models.TimeField()
-    endTime = models.TimeField()
+    endTime = models.TimeField(null=True, blank=True)
     team1 = models.ForeignKey(TEAM, on_delete=models.CASCADE, related_name='team1')
     team2 = models.ForeignKey(TEAM, on_delete=models.CASCADE, related_name='team2')
     headRef = models.ForeignKey(USER_REF, on_delete=models.CASCADE)

@@ -13,7 +13,7 @@ class USER_TEAM(models.Model):
     season = models.ForeignKey(SEASON, on_delete=models.CASCADE)
     number = models.PositiveBigIntegerField()
     captain = models.BooleanField(default=True)
-    graphic = models.CharField(max_length=100, null=True, blank=True)
+    graphic = models.ImageField(upload_to='images/', null=True, blank=True)
     
     def __str__(self):
         return f"{self.user} - {self.team} - {self.season}"

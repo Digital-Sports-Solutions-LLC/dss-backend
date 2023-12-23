@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework import generics
+from .models import EVENT_ROSTER
+from .serializers import Event_RosterSerializer
 
-# Create your views here.
+class Event_RosterListCreateView(generics.ListCreateAPIView):
+    queryset = EVENT_ROSTER.objects.all()
+    serializer_class = Event_RosterSerializer
+
+class Event_RosterRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = EVENT_ROSTER.objects.all()
+    serializer_class = Event_RosterSerializer

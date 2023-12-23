@@ -29,8 +29,15 @@ urlpatterns = [
     path('team/', include('team.urls')),
     path('role/', include('role.urls')),
     path('event_type/', include('event_type.urls')),
-    
-    # path('match/', include('match.urls')),
+    path('event_roster/', include('event_roster.urls')),
+    path('point/', include('point.urls')),    
+    path('match/', include('match.urls')),
+    path('match_type/', include('match_type.urls')),
+    path('user_ref/', include('user_ref.urls')),
+    path('user/', include('user.urls')),
+    path('event/', include('event.urls')),
+    path('timeout/', include('timeout.urls')),
+    path('user_team/', include('user_team.urls')),
 ]
 
 if settings.DEBUG:
