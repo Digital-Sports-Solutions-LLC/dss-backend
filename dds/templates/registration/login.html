@@ -1,12 +1,23 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h2>Log In</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log In</button>
-</form>
+{% if user.is_authenticated %}
+<style>
+  p {
+    color: blue;
+  }
+</style>
+  <p>Hi {{ user.username }}!, you are already logged in!</p>
+  <p><a href="{% url 'logout' %}">Log Out</a></p>
+  <p><a href="{% url 'password_reset' %}">Reset Password</a></p>
+{% else %}
+  <p>You are not logged in. Please log in!</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Log In</button>
+  </form>
+{% endif %}
 {% endblock %}
