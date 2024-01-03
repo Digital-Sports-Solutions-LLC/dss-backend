@@ -1,0 +1,25 @@
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Password reset on 127.0.0.1:8000
+From: webmaster@localhost
+To: mawilson0410@gmail.com
+Date: Wed, 03 Jan 2024 06:59:27 -0000
+Message-ID: <170426516728.22108.9513389454200408905@MikeLaptop>
+
+
+You're receiving this email because you requested a password reset for your user account at 127.0.0.1:8000.
+
+Please go to the following page and choose a new password:
+
+http://127.0.0.1:8000/accounts/reset/Mg/c07ev3-1f50199687201c16110e696ec8a0da1b/
+
+Your username, in case you’ve forgotten: mawil
+
+Thanks for using our site!
+
+The 127.0.0.1:8000 team
+
+
+
+-------------------------------------------------------------------------------
