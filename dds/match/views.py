@@ -10,3 +10,6 @@ class MatchListCreateView(generics.ListCreateAPIView):
 class MatchRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MATCH.objects.all()
     serializer_class = MatchSerializer
+    
+def match(request):
+    return render(request, "test.html")
