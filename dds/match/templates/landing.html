@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stacked Divs</title>
+    <style>
+        .wrapper {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            border: 1px solid #000;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}
+        {% for match in matches %}
+            <div class="wrapper">
+                <p>Court Event: {{ match.event }}</p>
+                <p>Court Number: {{ match.court_number }}</p>
+                <p>Status: {{ match.status }}</p>
+                <p>Start Time: {{ match.start_time }}</p>
+                <p>Team 1: {{ match.team1 }}</p>
+                <p>Team 2: {{ match.team2 }}</p>
+            </div>
+        {% endfor %}
+    {% endblock content %}
+</body>
+</html>
