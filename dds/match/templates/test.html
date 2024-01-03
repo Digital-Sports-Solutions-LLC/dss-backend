@@ -1,0 +1,22 @@
+<!-- FILEPATH: /C:/Users/adamf/Documents/Programming/dss-backend/dds/match/templates/test.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script>
+        var socket = new WebSocket("ws://127.0.0.1:8000/ws/");
+        socket.onopen = function() {
+            console.log("WebSocket connection established.");
+        };
+        socket.onmessage = function(event) {
+            console.log("Received message: " + event.data);
+        };
+        socket.onclose = function() {
+            console.log("WebSocket connection closed.");
+        };
+    </script>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+</body>
+</html>

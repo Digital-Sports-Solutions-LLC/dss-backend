@@ -29,8 +29,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1',]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:50383',
+    'http://localhost:52189',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow connections from any origin (for testing purposes)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT= os.path.join(BASE_DIR,"media/")
@@ -38,6 +40,7 @@ MEDIA_ROOT= os.path.join(BASE_DIR,"media/")
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -96,6 +99,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'dds.wsgi.application'
+ASGI_APPLICATION = 'dds.asgi.application'
 
 
 # Database
