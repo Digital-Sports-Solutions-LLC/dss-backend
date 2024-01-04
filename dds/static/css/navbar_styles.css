@@ -1,5 +1,5 @@
 ul {
-  position: fixed;
+  position: relative;
   top: 0;
   width: 100%;
   list-style-type: none;
@@ -28,4 +28,8 @@ li a:hover {
 
 .active {
   background-color: #b35d5d;
+}
+
+div {
+  position: relative;
 }
