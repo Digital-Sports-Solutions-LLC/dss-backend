@@ -1,7 +1,7 @@
-from django.urls import re_path
+from django.urls import re_path, path
 
 from . import consumers
 
 websocket_urlpatterns = [
-    re_path(r"ws/", consumers.MatchConsumer.as_asgi()),
+    path("ws/match/<int:match_id>/", consumers.MatchConsumer.as_asgi())
 ]

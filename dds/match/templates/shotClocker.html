@@ -1,10 +1,463 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Basic HTML Page</title>
+    <title id="title">{{ team }} Shot Clock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .navbar {
+            background-color: #3f51b5;
+            color: white;
+            font-size: 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0px 20px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar button {
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            color: white;
+        }
+
+        .content {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            transition: left 0.3s ease-in-out;
+        }
+
+        .settings-overlay.open {
+            left: 0;
+        }
+
+        .settings-page {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            background-color: #f5f5f5;
+            padding: 0px;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-overlay.open .settings-page {
+            transform: translateX(0);
+        }
+
+        .settings-content label,
+        .settings-content input {
+            margin-bottom: 10px;
+            margin-left: 5px;
+        }    
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 50px);
+            background-color: #f5f5f5;
+        }
+
+        .top-half {
+            display: flex;
+            flex-basis: 50%;
+        }
+
+        .button {
+            flex-grow: 1;
+            display: block;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            font-size: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button.left {
+            justify-content: flex-start;
+            text-align: center;
+        }
+
+        .button.right {
+            justify-content: flex-end;
+        }
+
+        .bottom-half {
+            display: flex;
+            flex-basis: 50%;
+        }
+
+        .button.big {
+            flex-grow: 1;
+        }    
+
+        .middle-container {
+            position: absolute;
+            top: 52%;
+            left: 49%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }   
+            
+        .timer {
+            width: 150px;
+            height: 150px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .paused {
+            animation-play-state: paused;
+        }
+
+        .timer p {
+            margin: 0;      
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 130px;
+            color: #ff0000;
+        }  
+        
+        .switch {
+            position: relative; 
+            display: inline-block; 
+            width: 60px; 
+            height: 34px;
+            margin-top: 5px;
+        } 
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3f51b5;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #3f51b5;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider:after {
+            color: white;
+            display: block;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            font-size: 10px;
+            font-family: Verdana, sans-serif;
+        }
+
+        @media (hover: hover) {
+            /* Only apply hover effect on devices that support hover */
+            .button:hover{
+                background-color: #f0f0f0;
+            }      
+        }
+            
+        </style>
 </head>
 <body>
-    <h1>Welcome to my website</h1>
-    <p>This is a basic HTML page for Shot Clocker {{ num }}.</p>
+    <div class="navbar">
+        <span class="title" id="navbar-title">{{ team }} Shot Clock</span>
+        <button class="settings-button" onclick="openSettings()">&#9965;</button>
+    </div>
+
+    <div class="container">
+
+        <div class="top-half">
+          <button class="button left" id="undo" onclick="undo(this)">UNDO</button>
+          <button class="button right" id="pause" onclick="pause(this)">RESUME</button>
+        </div>
+    
+        <div class="bottom-half">
+          <button class="button big" id="reset" onclick="reset(this)">RESET</button>
+        </div>   
+    
+        <div class="middle-container">
+          <div class="timer">
+            <p id="timer-text">0</p>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div style="display: flex; align-items: center;">
+              <span style="margin-right: 7px; margin-top: 7px; font-size: 20px" id="min-length">10</span>
+              <label class="switch">
+                <input type="checkbox" id="duration" onchange="updateSlider(this)">
+                <span class="slider"></span>
+              </label>
+              <span style="margin-left: 7px; margin-top: 7px; font-size: 20px" id="max-length">15</span>
+            </div>
+          </div>
+        </div>       
+      </div>
+    
+      <div class="settings-overlay">
+        <div class="settings-page" id="settings">
+          <div class="navbar" style="margin-bottom: 20px">
+            <span>Settings</span>
+            <button class="close-button" onclick="closeSettings()">&#88;</button>
+          </div>
+          <div class="settings-content">        
+      
+            <label for="timer">Shot Clock:</label>
+            <input type="number" id="timer" min="0" max="99" value="0" onchange="checkInput(this), updateTimer(this)"><br>
+      
+            <label for="players">Players:</label>
+            <input type="number" id="players" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+      
+            <label for="timeouts">Timeouts:</label>
+            <input type="number" id="timeouts" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+      
+            <label for="points">Points:</label>
+            <input type="number" id="points" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+
+          </div>
+        </div>
+      </div>
+
+    <script>
+    var side = {{ num }}
+    var endTime = new Date().getTime();
+    var timePaused = new Date().getTime();
+    var undoTime = new Date().getTime();
+    var paused = true;
+    var countDuration = "minimum"
+    var url = "ws://" + window.location.host + "/ws/match/{{ matchID }}/";
+
+    var socket = new WebSocket(url);
+    socket.onopen = function() {
+        console.log("WebSocket connection established.");
+    };
+    socket.onmessage = function(event) {
+        console.log("Received message: " + event.data);
+        updatePage(event)
+    };
+    socket.onclose = function() {
+        console.log("WebSocket connection closed.");
+    };
+
+    // Settings page functions
+    function openSettings() {
+        document.querySelector('.settings-overlay').classList.add('open');
+    }
+    
+    function closeSettings() {
+        document.querySelector('.settings-overlay').classList.remove('open');
+    }
+
+    const settingsOverlay = document.querySelector('.settings-overlay');
+    settingsOverlay.addEventListener('click', (event) => {
+        if (event.target === settingsOverlay) {
+            closeSettings();
+        }
+    });
+
+    function checkInput(input) {
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        if (input.value > max) {
+            input.value = max;
+        } else if (input.value < min) {
+            input.value = min;
+        }
+    }
+
+    // Update the server when an event occurs 
+    function updateServer() { 
+
+        var text = JSON.stringify({
+            "match_id": {{ matchID }},
+            "side": "shotClock"+side,
+            "endTime": new Date(endTime).toISOString(),
+            "paused": paused,
+        })
+
+        console.log("Sending message: " + text);
+
+        socket.send(text);
+    }
+
+    function timer(startTime, endTime) {
+        var diff = endTime - startTime;
+        if (diff < 0) {
+            diff = 0;
+        }
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        document.getElementById("timer-text").innerHTML = seconds;
+        document.getElementById("timer").value = seconds;
+    }
+
+    var intervalId;
+
+    function startInterval() {
+        intervalId = setInterval(() => {
+            timer(new Date().getTime(), endTime);
+        }, 100); // Execute timer every 100 milliseconds
+    }
+
+    function pause(element) {
+        if (paused) {            
+            element.innerHTML = "PAUSE";
+            endTime = endTime + (new Date().getTime() - timePaused);
+            undoTime = undoTime + (new Date().getTime() - timePaused);
+            startInterval(); // Resume the interval
+            paused = false;
+        } else {            
+            element.innerHTML = "RESUME";
+            timePaused = new Date().getTime();            
+            clearInterval(intervalId); // Pause the interval
+            paused = true;            
+        }
+        updateServer();
+    }
+
+    function getResetSeconds() {
+        if (countDuration == "minimum") {
+            return document.getElementById("min-length").innerHTML;
+        } else {
+            return document.getElementById("max-length").innerHTML;
+        }
+    }
+
+    // Reset the timer
+    function reset(element) {
+        var currentTime = new Date().getTime();
+        undoTime = endTime;
+        endTime = currentTime + getResetSeconds() * 1000;        
+        if (paused) {
+            timePaused = currentTime;
+        }
+        timer(currentTime, endTime)
+        updateServer();
+    }
+    
+    // Undo (BROKEN)
+    function undo(element) {
+        var currentTime = new Date().getTime();
+        var temp;        
+        temp = endTime;
+        endTime = undoTime;
+        undoTime = temp;     
+        timer(currentTime, endTime)
+        updateServer();
+    }
+
+    // Update the timer
+    function updateTimer(element) {
+        var currentTime = new Date().getTime();
+        endTime = currentTime + element.value * 1000;
+        if (paused) {
+            timePaused = currentTime;
+        }
+        timer(currentTime, endTime)
+        updateServer();
+    }
+
+    // Update the slider
+    function updateSlider(element) {
+        if (element.checked) {
+            countDuration = "maximum";
+            updateServer();
+        } else {
+            countDuration = "minimum";
+            updateServer();
+        }
+    }
+
+    // Update Page
+    function updatePage(e) {
+        var response = JSON.parse(e.data);
+        var team;
+        
+        if (side == 1) {
+            team = "team1";
+        } else {
+            team = "team2";
+        }
+        
+        endTime = new Date(response[`${team}EndTime`]).getTime();
+        paused = response[`${team}Paused`];
+        console.log("Paused: " + paused);
+        if (paused) {
+            document.getElementById("pause").innerHTML = "RESUME";
+        } else {
+            document.getElementById("pause").innerHTML = "PAUSE";
+        }
+        
+    };  
+
+    </script>
+      
 </body>
 </html>
