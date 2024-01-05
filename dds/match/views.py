@@ -44,7 +44,7 @@ def index(request):
         "matches": ret,
     }
         
-    return render(request, "landing.html", context)
+    return render(request, "home.html", context)
 
 def match(request, pk):
     match = MATCH.objects.get(match_ID=pk)
