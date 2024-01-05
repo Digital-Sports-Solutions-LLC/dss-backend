@@ -3,18 +3,31 @@
 <html lang="en">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}My Website{% endblock %}</title>
+  <title>{% block title %}DDS Website{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/navbar_styles.css' %}">
+{% if user.is_authenticated %}
 <body>
   <div class="navbar">
     <ul>
       <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-      <li><a href="#home">Home</a></li>
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li><a href="#news">News</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li style="float:right"><a class="active" href="{% url 'login' %}">{{ user.username }}</a></li>
+    </ul>
+  </div>
+{% else %}
+<body>
+  <div class="navbar">
+    <ul>
+      <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+      <li><a href="{% url 'home' %}">Home</a></li>
       <li><a href="#news">News</a></li>
       <li><a href="#contact">Contact</a></li>
       <li style="float:right"><a class="active" href="{% url 'login' %}">Login</a></li>
     </ul>
   </div>
+{% endif %}
 
 {% comment %} Rest of HTML Code for page: {% endcomment %}
 {% block content %}

@@ -10,8 +10,8 @@ class EVENT(models.Model):
     league = models.ForeignKey(LEAGUE, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     location = models.ForeignKey(LOCATION, on_delete=models.CASCADE)
-    startDate = models.DateField()
-    endDate = models.DateField()
+    startDate = models.DateField(null=True, blank=True)
+    endDate = models.DateField(null=True, blank=True)
     event_type = models.ForeignKey(EVENT_TYPE, on_delete=models.CASCADE)
     graphic = models.ImageField(upload_to='images/', null=True, blank=True)
     
