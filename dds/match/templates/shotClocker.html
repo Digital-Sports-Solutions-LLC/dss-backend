@@ -288,16 +288,17 @@
 
     <script>
     var side = {{ num }}
-    var endTime = new Date().getTime();
-    var timePaused = new Date().getTime();
-    var undoTime = new Date().getTime();
-    var paused = true;
-    var countDuration = "minimum"
+    var endTime = new Date(`{{ endTime }}`).getTime();
+    var timePaused = new Date('{{ timePaused }}').getTime();
+    var undoTime = new Date('{{ undoTime }}').getTime();
+    var paused = {{ paused|lower }};
+    var countDuration = '{{ countDuration }}'
     var url = "ws://" + window.location.host + "/ws/match/{{ matchID }}/";
 
     var socket = new WebSocket(url);
     socket.onopen = function() {
         console.log("WebSocket connection established.");
+        updatePage(null)
     };
     socket.onmessage = function(event) {
         console.log("Received message: " + event.data);
@@ -340,10 +341,11 @@
             "match_id": {{ matchID }},
             "side": "shotClock"+side,
             "endTime": new Date(endTime).toISOString(),
+            "timePaused": new Date(timePaused).toISOString(),
+            "undoTime": new Date(undoTime).toISOString(),
             "paused": paused,
+            "countDuration": countDuration
         })
-
-        console.log("Sending message: " + text);
 
         socket.send(text);
     }
@@ -358,7 +360,7 @@
         document.getElementById("timer").value = seconds;
     }
 
-    var intervalId;
+    var intervalId = null;
 
     function startInterval() {
         intervalId = setInterval(() => {
@@ -427,34 +429,55 @@
     // Update the slider
     function updateSlider(element) {
         if (element.checked) {
-            countDuration = "maximum";
-            updateServer();
+            countDuration = "maximum";            
         } else {
             countDuration = "minimum";
-            updateServer();
         }
+        updateServer();
     }
 
     // Update Page
     function updatePage(e) {
-        var response = JSON.parse(e.data);
-        var team;
+        if (e != null) {
+            var response = JSON.parse(e.data);
+            console.log(response);
+            var team;
         
-        if (side == 1) {
-            team = "team1";
-        } else {
-            team = "team2";
+            if (side == 1) {
+                team = "team1";
+            } else {
+                team = "team2";
+            }
+            
+            endTime = new Date(response[`${team}EndTime`]).getTime();
+            timePaused = new Date(response[`${team}TimePaused`]).getTime();
+            undoTime = new Date(response[`${team}UndoTime`]).getTime();
+
+            paused = response[`${team}Paused`];
+            countDuration = response[`${team}CountDuration`];
         }
         
-        endTime = new Date(response[`${team}EndTime`]).getTime();
-        paused = response[`${team}Paused`];
-        console.log("Paused: " + paused);
         if (paused) {
             document.getElementById("pause").innerHTML = "RESUME";
+            if (intervalId != null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            timer(timePaused, endTime);
         } else {
             document.getElementById("pause").innerHTML = "PAUSE";
+            if (intervalId == null) {
+                startInterval();
+            }            
+            timer(new Date().getTime(), endTime);
         }
         
+        if (countDuration == "minimum") {
+            document.getElementById("duration").checked = false;
+        } else {
+            document.getElementById("duration").checked = true;
+        }
+
     };  
 
     </script>

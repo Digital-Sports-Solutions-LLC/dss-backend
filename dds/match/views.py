@@ -76,12 +76,18 @@ def shotClocker(request, pk, num):
     
     if num == 1:
         context["team"] = match.team1.teamAcronym
-        context["teamScore"] = getScore(match.team1.team_ID, match.match_ID)
-        context["teamEndTime"] = data[1]
+        context["endTime"] = data["team1EndTime"]
+        context["timePaused"] = data["team1TimePaused"]
+        context["undoTime"] = data["team1UndoTime"]
+        context["paused"] = data["team1Paused"]
+        context["countDuration"] = data["team1CountDuration"]
     elif num == 2:
         context["team"] = match.team2.teamAcronym
-        context["teamScore"] = getScore(match.team2.team_ID, match.match_ID)
-        context["teamEndTime"] = data[3]
+        context["endTime"] = data["team2EndTime"]
+        context["timePaused"] = data["team2TimePaused"]
+        context["undoTime"] = data["team2UndoTime"]
+        context["paused"] = data["team2Paused"]
+        context["countDuration"] = data["team2CountDuration"]
     
     return render(request, "shotClocker.html", context)
 
