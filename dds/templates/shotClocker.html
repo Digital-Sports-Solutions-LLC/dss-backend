@@ -273,8 +273,8 @@
             <label for="timer">Shot Clock:</label>
             <input type="number" id="timer" min="0" max="99" value="0" onchange="checkInput(this), updateTimer(this)"><br>
       
-            <label for="players">Players:</label>
-            <input type="number" id="players" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+            {% comment %} <label for="players">Players:</label>
+            <input type="number" id="players" min="0" max="99" value="0" onchange="updateServer(this)"><br> {% endcomment %}
       
             <label for="timeouts">Timeouts:</label>
             <input type="number" id="timeouts" min="0" max="99" value="0" onchange="updateServer(this)"><br>
@@ -293,7 +293,7 @@
     var undoTime = new Date('{{ undoTime }}').getTime();
     var paused = {{ paused|lower }};
     var countDuration = '{{ countDuration }}'
-    var url = "ws://" + window.location.host + "/ws/match/{{ matchID }}/";
+    var url = "ws://" + window.location.host + "/ws/match/{{ matchId }}/";
 
     var socket = new WebSocket(url);
     socket.onopen = function() {
@@ -398,13 +398,14 @@
         undoTime = endTime;
         endTime = currentTime + getResetSeconds() * 1000;        
         if (paused) {
+            undoTime = undoTime + (new Date().getTime() - timePaused);
             timePaused = currentTime;
         }
         timer(currentTime, endTime)
         updateServer();
     }
     
-    // Undo (BROKEN)
+    // Undo
     function undo(element) {
         var currentTime = new Date().getTime();
         var temp;        
@@ -412,6 +413,9 @@
         endTime = undoTime;
         undoTime = temp;     
         timer(currentTime, endTime)
+        if (paused) {
+            //timePaused = new Date().getTime(); 
+        }
         updateServer();
     }
 
@@ -440,7 +444,6 @@
     function updatePage(e) {
         if (e != null) {
             var response = JSON.parse(e.data);
-            console.log(response);
             var team;
         
             if (side == 1) {

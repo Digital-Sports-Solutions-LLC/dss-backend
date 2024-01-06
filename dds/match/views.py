@@ -67,10 +67,7 @@ def shotClocker(request, pk, num):
     data = get_data(pk)
     
     context = {
-        "matchID": match.match_ID,
-        "event": match.court_event.event.name,
-        "courtNumber": match.court_event.courtNumber,
-        "status": match.status,
+        "matchId": match.match_ID,
         "num": num,
     }
     
@@ -93,15 +90,22 @@ def shotClocker(request, pk, num):
 
 def referee(request, pk):
     match = MATCH.objects.get(match_ID=pk)
+    data = get_data(pk)
+    
     context = {
-        "matchID": match.match_ID,
-        "event": match.court_event.event.name,
-        "courtNumber": match.court_event.courtNumber,
-        "status": match.status,
+        "matchId": match.match_ID,
         "team1": match.team1.teamAcronym,
         "team1Score": getScore(match.team1.team_ID, match.match_ID),
         "team2": match.team2.teamAcronym,        
         "team2Score": getScore(match.team2.team_ID, match.match_ID),
     }
     
-    return render(request, "referee.html", context)
+    context["endTime"] = data["halfEndTime"]
+    context["timePaused"] = data["timePaused"]
+    context["timeoutEndTime"] = data["timeoutEndTime"]
+    context["paused"] = data["paused"]
+    context["middleOfPoint"] = data["middleOfPoint"]
+    context["activeTimeout"] = data["activeTimeout"]
+    context["half"] = data["half"]
+    
+    return render(request, "gameClocker.html", context)
