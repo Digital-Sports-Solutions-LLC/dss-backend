@@ -324,15 +324,15 @@
                 <td colspan="2" class="table-title">Timeouts Left</td>
             </tr>
             <tr>
-                <td class="table-text" id="team1-timeouts">0</td>
-                <td class="table-text" id="team2-timeouts">0</td>
+                <td class="table-text" id="team1-timeouts">{{ team1Timeouts }}</td>
+                <td class="table-text" id="team2-timeouts">{{ team2Timeouts }}</td>
             </tr>            
             <tr>
                 <td colspan="2" class="table-title">Points</td>
             </tr>
             <tr>
-                <td class="table-text" id="team1-pts">0</td>
-                <td class="table-text" id="team2-pts">0</td>
+                <td class="table-text" id="team1-pts">{{ team1Score }}</td>
+                <td class="table-text" id="team2-pts">{{ team2Score }}</td>
             </tr>
         </tbody>
         </table>
@@ -445,7 +445,12 @@
 
         if (diff < 0) {
             diff = 0;
-            activeTimeout = false;         
+            if (activeTimeout) {
+                activeTimeout = false; 
+                pause();
+                timer(new Date().getTime(), endTime); // Update timer
+                return;
+            }                  
         }
 
         // Minutes
@@ -485,31 +490,18 @@
             }
             
             element.innerHTML = "TIMEOUT";
-            endTime = endTime + (new Date().getTime() - timePaused);
-            startInterval();
-            paused = false;
+            unpause();
 
         } else if (type == "timeout") {
-            timePaused = new Date().getTime();            
-            clearInterval(intervalId); // Pause the interval
-            paused = true; 
+            pause();
             showPopup(element);
             document.getElementById('time-button').innerHTML = "RESUME";
         } else if (type == "endtimeout") {
             activeTimeout = false;
-            timePaused = new Date().getTime(); 
-            clearInterval(intervalId); // Pause the interval
-            paused = true;
+            pause();
             timer(new Date().getTime(), endTime); // Update timer
             document.getElementById('time-button').innerHTML = "RESUME";
-        } else if (type == "resumeto") {            
-            element.innerHTML = "END TIMEOUT";
-            timeoutEndTime = timeoutEndTime + (new Date().getTime() - timePaused);
-            startInterval();
-            paused = false;
         }
-
-        updateServer();
     }
 
     function point(element) {
@@ -518,22 +510,34 @@
         if (type === "startpoint") {
             element.innerHTML = "END POINT";
             document.getElementById('time-button').innerHTML = "TIMEOUT";
-            middleOfPoint = true;            
-            endTime = endTime + (new Date().getTime() - timePaused);
-            startInterval(); // Resume the interval
-            paused = false;
+            middleOfPoint = true;
+            updateDatabase("startpoint", null, null);            
+            unpause();
         } else if (type === "endpoint") {
             if (!activeTimeout) {
                 document.getElementById('time-button').innerHTML = "RESUME";
             } else {
-                document.getElementById('time-button').innerHTML = "RESUME TO";
-            }                   
-            timePaused = new Date().getTime();            
-            clearInterval(intervalId); // Pause the interval
-            paused = true;      
+                window.alert("Please end timeout before ending the point");
+                return
+            }
+            if (!paused) {
+                pause(); 
+            }                             
             showPopup(element);          
         }
+    }
 
+    function pause() {
+        clearInterval(intervalId); // Pause the interval
+        paused = true;
+        timePaused = new Date().getTime();
+        updateServer();
+    }
+
+    function unpause() {
+        startInterval(); // Resume the interval
+        paused = false;
+        endTime = endTime + (new Date().getTime() - timePaused);
         updateServer();
     }
 
@@ -586,15 +590,19 @@
             endTime = endTime + (new Date().getTime() - timePaused);            
             if (element.value === "official") {
                 //10000 * 3600
-                timeoutEndTime = new Date().getTime() + 1000;
+                timeoutEndTime = new Date().getTime() + 10000 * 3600;
             } else {
+                // 30 sec = 30000
                 timeoutEndTime = new Date().getTime() + 30000;
             }
             paused = false;
             startInterval();
             document.getElementById("timer-text").style.color = "#00ffff";
             document.getElementById('time-button').innerHTML = "END TIMEOUT";
-            // Send command to server letting it know a timeout started and add the timeout to the database
+
+            // Prombt user for note
+            var note = window.prompt("Enter a note for the timeout:", "");
+            updateDatabase("timeout", element.value, note);
         } else if (element.id === "endpoint") {
             middleOfPoint = false;
             paused = true;
@@ -603,11 +611,66 @@
             timer(new Date().getTime(), endTime);
             document.getElementById('point-button').innerHTML = "START POINT";
             document.getElementById('time-button').innerHTML = "RESUME";
+
+            // Prombt user for note
+            var note = window.prompt("Enter a note for the point:", "");
+            updateDatabase("endpoint", element.value, note);
             clearInterval(intervalId);
-            // Send command to server letting it know a point ended and add the point to the database
         }
         updateServer();   
     } 
+
+    function updateDatabase(request, team, note) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/update", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        // Define the callback function to handle the response
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Request was successful
+                    console.log('Entry added successfully');
+                } else {
+                    // Error handling
+                    console.error('Error adding entry:', xhr.statusText);
+                }
+            }
+        };
+
+        var json;
+        if (request == "startpoint") {
+            json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},                                
+                    "half": half,
+                    "start_time": new Date().getTime(),                
+                });
+        } else if (request == "endpoint") {
+            json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},                                
+                    "winner": team,
+                    "end_time": new Date().getTime(),
+                    "note": note,                
+                });
+        } else if (request == "timeout") {
+            if (team == "official") {
+                type = "official";
+                team = null;
+            } else {
+                type = "team";
+            }
+            json = JSON.stringify({
+                    "type": type,
+                    "takenBy": team,
+                    "note": note,                
+                });
+        }
+        console.log(json);
+
+        xhr.send(json);
+    }
     
     function updateTimer(element) {
         const value = element.value;
@@ -649,9 +712,6 @@
             if (activeTimeout && !paused) {
                 document.getElementById('time-button').innerHTML = "END TIMEOUT";
                 document.getElementById("timer-text").style.color = "#00ffff";
-            } else if (activeTimeout && paused) {
-                document.getElementById('time-button').innerHTML = "RESUME TO";
-                document.getElementById("timer-text").style.color = "#00ffff";
             } else if (!activeTimeout && paused) {
                 document.getElementById('time-button').innerHTML = "RESUME";
             } else {
@@ -683,9 +743,7 @@
             document.getElementById("navbar-title").innerHTML = "Game Clock - OT";
         }
 
-        
-
-
+        document.getElementById("half").value = half;     
     }
 
   </script>

@@ -2,8 +2,11 @@ from django.shortcuts import render
 from rest_framework import generics
 from .models import MATCH
 from point.models import POINT
+from timeout.models import TIMEOUT
 from .serializers import MatchSerializer
 from .consumers import get_data
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 class MatchListCreateView(generics.ListCreateAPIView):
     queryset = MATCH.objects.all()
@@ -15,11 +18,27 @@ class MatchRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     
 def getScore(team_ID, match_ID):
     points = POINT.objects.filter(winner=team_ID, match=match_ID)
-    return len(points) 
-    
+    return len(points)
+
+def getPointIDsInHalf(match_ID, half):
+    points = POINT.objects.filter(match=match_ID, half=half)
+    point_ids = [point.point_ID for point in points]
+    return point_ids
+
+def getTimeouts(team_ID, point_ID, half): 
+    num = 0       
+    for point in point_ID:
+        timeouts = TIMEOUT.objects.filter(takenBy=team_ID, point=point)
+        num += len(timeouts)
+          
+    if (half == "OT"):
+        return 1 - num
+    else:
+        return 2 - num
+                
 def index(request):
     
-    matches = MATCH.objects.all().order_by('-court_event__event__startDate')[:7]
+    matches = MATCH.objects.all().order_by('-court_event__event__startDate')[:20]
     
     ret = []
     num = 0
@@ -60,7 +79,7 @@ def match(request, pk):
         "team2Score": getScore(match.team2.team_ID, match.match_ID),
     }
     
-    return render(request, "match.html", context)
+    return render(request, "jobSelection.html", context)
 
 def shotClocker(request, pk, num):
     match = MATCH.objects.get(match_ID=pk)
@@ -96,8 +115,8 @@ def referee(request, pk):
         "matchId": match.match_ID,
         "team1": match.team1.teamAcronym,
         "team1Score": getScore(match.team1.team_ID, match.match_ID),
-        "team2": match.team2.teamAcronym,        
-        "team2Score": getScore(match.team2.team_ID, match.match_ID),
+        "team2": match.team2.teamAcronym,  
+        "team2Score": getScore(match.team2.team_ID, match.match_ID),        
     }
     
     context["endTime"] = data["halfEndTime"]
@@ -108,4 +127,34 @@ def referee(request, pk):
     context["activeTimeout"] = data["activeTimeout"]
     context["half"] = data["half"]
     
+    vals = getPointIDsInHalf(match.match_ID, data["half"])
+        
+    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"])
+    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"])
+    
     return render(request, "gameClocker.html", context)
+
+def update(request):
+    # TODO: Update database with new data
+    if request.method == "POST":
+        try:
+            request = request.POST["request"]
+            if request == "startpoint":
+                match = request.POST["matchId"]
+                half = request.POST["half"]
+                startTime = request.POST["startTime"]
+                pointNumber = 
+                
+                newPoint = POINT(match=match, pointNumber=1, half=half, startTime=startTime)                
+                               
+            elif request == "endpoint":
+           
+           
+           
+           return JsonResponse({"success": "Match updated successfully."}, status=201)
+       
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    
+    return JsonResponse({"error": 'Invalid request method'}, status=400)
+    
