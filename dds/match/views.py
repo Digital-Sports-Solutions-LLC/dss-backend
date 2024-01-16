@@ -73,6 +73,7 @@ def match(request, pk):
     match = MATCH.objects.get(match_ID=pk)
     context = {
         "matchID": match.match_ID,
+        ""
         "event": match.court_event.event.name,
         "courtNumber": match.court_event.courtNumber,
         "status": match.status,
@@ -116,6 +117,7 @@ def referee(request, pk):
     
     context = {
         "matchId": match.match_ID,
+        "match": match.court_event,
         "team1": match.team1.teamAcronym,
         "team1Score": getScore(match.team1.team_ID, match.match_ID),
         "team2": match.team2.teamAcronym,  
@@ -146,7 +148,7 @@ def update(request, pk):
             if request_type == "startpoint": #Start Point
                 matchID = data.get("matchId")
                 half = data.get("half")
-                startTime = datetime.datetime.utcfromtimestamp(data.get("startTime") // 1000.0).time()                
+                startTime = data.get("startTime")                
                 pointNumber = POINT.objects.filter(match=matchID).count() + 1
                 
                 POINT.objects.create(match=MATCH.objects.get(match_ID=matchID), 
@@ -157,7 +159,7 @@ def update(request, pk):
             elif request_type == "endpoint": #Endpoint
                 matchID = data.get("matchId")
                 pointID = POINT.objects.filter(match=matchID).last().point_ID
-                endTime = datetime.datetime.utcfromtimestamp(data.get("endTime") // 1000.0).time()
+                endTime = data.get("startTime")
                 note = data.get("note")
                 
                 winner = data.get("winner")

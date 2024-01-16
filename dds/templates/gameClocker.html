@@ -310,8 +310,8 @@
         <span id="timer-text">25:00</span>
     </div>        
     <div class="buttons">
-        <button id="time-button" onclick="timeout(this)">RESUME</button><br>
-        <button id="point-button" onclick="point(this)">START POINT</button>
+        <button id="time-button" onclick="firstButton(this)">RESUME</button><br>
+        <button id="point-button" onclick="secondButton(this)">START POINT</button>
     </div>
     <div>
         <table class="info-table">
@@ -446,10 +446,7 @@
         if (diff < 0) {
             diff = 0;
             if (activeTimeout) {
-                activeTimeout = false; 
-                pause();
-                timer(new Date().getTime(), endTime); // Update timer
-                return;
+                endTimeout();
             }                  
         }
 
@@ -462,7 +459,6 @@
         if (!activeTimeout) {
             document.getElementById("minutes").value = minutes;
             document.getElementById("seconds").value = seconds;
-            document.getElementById("timer-text").style.color = "#ff0000";
         }
         
         if (seconds < 10) {
@@ -480,31 +476,27 @@
         }, 100); // Execute timer every 100 milliseconds
     }
 
-    function timeout(element) {
+    function firstButton(element) {
         const type = element.innerHTML.toLowerCase().replace(" ", "");
         
         if (type === "resume") {
             if (!middleOfPoint) {
                 window.alert("Please start the point before resuming the game.");
                 return;
-            }
-            
+            }            
             element.innerHTML = "TIMEOUT";
             unpause();
-
         } else if (type == "timeout") {
-            pause();
             showPopup(element);
+            pause();
             document.getElementById('time-button').innerHTML = "RESUME";
         } else if (type == "endtimeout") {
-            activeTimeout = false;
-            pause();
-            timer(new Date().getTime(), endTime); // Update timer
+            endTimeout();            
             document.getElementById('time-button').innerHTML = "RESUME";
         }
     }
 
-    function point(element) {
+    function secondButton(element) {
         const type = element.innerHTML.toLowerCase().replace(" ", "");
 
         if (type === "startpoint") {
@@ -537,8 +529,20 @@
     function unpause() {
         startInterval(); // Resume the interval
         paused = false;
-        endTime = endTime + (new Date().getTime() - timePaused);
+        if (!activeTimeout) {
+            endTime = endTime + (new Date().getTime() - timePaused);
+        }        
         updateServer();
+    }
+
+    function endTimeout() {
+        activeTimeout = false;
+        paused = true;
+        clearInterval(intervalId);
+        document.getElementById("timer-text").style.color = "#ff0000";
+        document.getElementById('time-button').innerHTML = "RESUME";
+        timer(new Date().getTime(), endTime); 
+        updateServer();       
     }
 
     function showPopup(element) {       
@@ -586,17 +590,17 @@
         } 
         
         if (element.id === "timeout") {
-            activeTimeout = true;
-            endTime = endTime + (new Date().getTime() - timePaused);            
+            activeTimeout = true;                     
             if (element.value === "Official") {
                 //10000 * 3600
                 timeoutEndTime = new Date().getTime() + 10000 * 3600;
             } else {
                 // 30 sec = 30000
-                timeoutEndTime = new Date().getTime() + 30000;
+                // 5 sec = 5000
+                timeoutEndTime = new Date().getTime() + 5000;
             }
-            paused = false;
-            startInterval();
+
+            unpause();
             document.getElementById("timer-text").style.color = "#00ffff";
             document.getElementById('time-button').innerHTML = "END TIMEOUT";
 
@@ -605,10 +609,12 @@
             updateDatabase("timeout", element.value, note);
         } else if (element.id === "endpoint") {
             middleOfPoint = false;
-            paused = true;
-            activeTimeout = false;
-            
-            timer(new Date().getTime(), endTime);
+            if (!paused) {
+                pause();
+            } else {
+                updateServer();
+            }
+
             document.getElementById('point-button').innerHTML = "START POINT";
             document.getElementById('time-button').innerHTML = "RESUME";
 
@@ -617,7 +623,6 @@
             updateDatabase("endpoint", element.value, note);
             clearInterval(intervalId);
         }
-        updateServer();   
     } 
 
     function updateDatabase(request, team, note) {
@@ -629,35 +634,35 @@
         var csrftoken = getCookie('csrftoken');
 
         // Set the CSRF token in the request header
-        xhr.setRequestHeader('X-CSRFToken', csrftoken);
-
-        // Define the callback function to handle the response
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    // Request was successful
-                    console.log('Entry added successfully');
-                } else {
-                    // Error handling
-                    console.error('Error adding entry:', xhr.statusText);
-                }
-            }
-        };
+        xhr.setRequestHeader('X-CSRFToken', csrftoken);        
 
         var json;
+        var now = new Date();
+        var utcHours = now.getUTCHours();
+        var utcMinutes = now.getUTCMinutes();
+        var utcSeconds = now.getUTCSeconds();
+
+        // Format the values if needed (add leading zeros)
+        utcHours = utcHours < 10 ? "0" + utcHours : utcHours;
+        utcMinutes = utcMinutes < 10 ? "0" + utcMinutes : utcMinutes;
+        utcSeconds = utcSeconds < 10 ? "0" + utcSeconds : utcSeconds;
+
+        var utcTimeString = utcHours + ":" + utcMinutes + ":" + utcSeconds;
         if (request == "startpoint") {
             json = JSON.stringify({
                     "request": request,
-                    "matchId": {{ matchId }},                                
+                    "matchId": {{ matchId }}, 
+                    "match": '{{ match }}',                               
                     "half": half,
-                    "startTime": new Date().getTime(),                
+                    "startTime": utcTimeString,                
                 });
         } else if (request == "endpoint") {
             json = JSON.stringify({
                     "request": request,
-                    "matchId": {{ matchId }},                                
+                    "matchId": {{ matchId }},
+                    "match": '{{ match }}',                                 
                     "winner": team,
-                    "endTime": new Date().getTime(),
+                    "endTime": utcTimeString,
                     "note": note,                
                 });
         } else if (request == "timeout") {
@@ -670,12 +675,28 @@
             json = JSON.stringify({
                     "request": request,
                     "matchId": {{ matchId }},
+                    "match": '{{ match }}', 
                     "type": type,
                     "takenBy": team,
                     "note": note,                
                 });
         }
         console.log(json);
+
+        // Define the callback function to handle the response
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Request was successful
+                    updateTeam(request, team);
+                    console.log('Entry added successfully');
+                } else {
+                    // Error handling
+                    window.alert("Error adding entry. Please write the following down to add to the database manually:" + json);
+                    console.error('Error adding entry:', xhr.statusText);
+                }
+            }
+        };
 
         xhr.send(json);
     }
@@ -706,7 +727,24 @@
 
     function updateHalf(element) {
         half = element.value;
+        window.location.reload();
         updateServer();
+    }
+
+    function updateTeam(data, team) {
+        if (data == "timeout") {
+            if (team == '{{ team1 }}') {
+                document.getElementById("team1-timeouts").innerHTML = parseInt(document.getElementById("team1-timeouts").innerHTML) - 1;
+            } else if (team == '{{ team2 }}') {
+                document.getElementById("team2-timeouts").innerHTML = parseInt(document.getElementById("team2-timeouts").innerHTML) - 1;
+            }
+        } else if (data == "endpoint") {
+            if (team == '{{ team1 }}') {
+                document.getElementById("team1-pts").innerHTML = parseInt(document.getElementById("team1-pts").innerHTML) + 1;
+            } else if (team == '{{ team2 }}') {
+                document.getElementById("team2-pts").innerHTML = parseInt(document.getElementById("team2-pts").innerHTML) + 1;
+            }
+        }
     }
 
     // Update webpage
@@ -756,7 +794,7 @@
             document.getElementById("navbar-title").innerHTML = "Game Clock - 2nd Half";
         } else if (half === "OT") {
             document.getElementById("navbar-title").innerHTML = "Game Clock - OT";
-        }
+        }       
 
         document.getElementById("half").value = half;     
     }
