@@ -572,7 +572,7 @@
             const button = document.createElement('button');
             button.innerText = option;
             button.id = type;
-            button.value = option.replace(" ", "").toLowerCase();
+            button.value = option;
             button.onclick = () => closePopup(button);
             popupOptions.appendChild(button);
         });        
@@ -588,7 +588,7 @@
         if (element.id === "timeout") {
             activeTimeout = true;
             endTime = endTime + (new Date().getTime() - timePaused);            
-            if (element.value === "official") {
+            if (element.value === "Official") {
                 //10000 * 3600
                 timeoutEndTime = new Date().getTime() + 10000 * 3600;
             } else {
@@ -622,8 +622,14 @@
 
     function updateDatabase(request, team, note) {
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/update", true);
+        xhr.open("POST", "update", true);
         xhr.setRequestHeader('Content-Type', 'application/json');
+
+        // Get the CSRF token from the cookie
+        var csrftoken = getCookie('csrftoken');
+
+        // Set the CSRF token in the request header
+        xhr.setRequestHeader('X-CSRFToken', csrftoken);
 
         // Define the callback function to handle the response
         xhr.onreadystatechange = function() {
@@ -644,24 +650,26 @@
                     "request": request,
                     "matchId": {{ matchId }},                                
                     "half": half,
-                    "start_time": new Date().getTime(),                
+                    "startTime": new Date().getTime(),                
                 });
         } else if (request == "endpoint") {
             json = JSON.stringify({
                     "request": request,
                     "matchId": {{ matchId }},                                
                     "winner": team,
-                    "end_time": new Date().getTime(),
+                    "endTime": new Date().getTime(),
                     "note": note,                
                 });
         } else if (request == "timeout") {
-            if (team == "official") {
-                type = "official";
+            if (team == "Official") {
+                type = "Official";
                 team = null;
             } else {
-                type = "team";
+                type = "Team";
             }
             json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},
                     "type": type,
                     "takenBy": team,
                     "note": note,                
@@ -670,6 +678,13 @@
         console.log(json);
 
         xhr.send(json);
+    }
+
+    // Function to get the CSRF token from the cookie
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length == 2) return parts.pop().split(";").shift();
     }
     
     function updateTimer(element) {

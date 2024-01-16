@@ -8,5 +8,5 @@ urlpatterns = [
     path('<int:pk>', match, name='match'),
     path('<int:pk>/SC/<int:num>', shotClocker, name='shotClocker'),
     path('<int:pk>/REF', referee, name='referee'),
-    path('update', update, name='add')
+    path('<int:pk>/update', update, name='update')
 ]

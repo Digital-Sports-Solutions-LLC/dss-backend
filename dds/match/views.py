@@ -1,8 +1,11 @@
+import datetime
+import json
 from django.shortcuts import render
 from rest_framework import generics
 from .models import MATCH
 from point.models import POINT
 from timeout.models import TIMEOUT
+from team.models import TEAM
 from .serializers import MatchSerializer
 from .consumers import get_data
 from django.http import JsonResponse
@@ -134,27 +137,63 @@ def referee(request, pk):
     
     return render(request, "gameClocker.html", context)
 
-def update(request):
-    # TODO: Update database with new data
-    if request.method == "POST":
+def update(request, pk):
+    if request.method == "POST":                
         try:
-            request = request.POST["request"]
-            if request == "startpoint":
-                match = request.POST["matchId"]
-                half = request.POST["half"]
-                startTime = request.POST["startTime"]
-                pointNumber = 
+            data = json.loads(request.body.decode('utf-8'))
+            request_type = data.get("request")
+
+            if request_type == "startpoint": #Start Point
+                matchID = data.get("matchId")
+                half = data.get("half")
+                startTime = datetime.datetime.utcfromtimestamp(data.get("startTime") // 1000.0).time()                
+                pointNumber = POINT.objects.filter(match=matchID).count() + 1
                 
-                newPoint = POINT(match=match, pointNumber=1, half=half, startTime=startTime)                
-                               
-            elif request == "endpoint":
-           
-           
-           
-           return JsonResponse({"success": "Match updated successfully."}, status=201)
+                POINT.objects.create(match=MATCH.objects.get(match_ID=matchID), 
+                                    pointNumber=pointNumber, 
+                                    half=half, 
+                                    startTime=startTime)
+                MATCH.objects.filter(match_ID=matchID).update(status="In Progress - " + half)                                            
+            elif request_type == "endpoint": #Endpoint
+                matchID = data.get("matchId")
+                pointID = POINT.objects.filter(match=matchID).last().point_ID
+                endTime = datetime.datetime.utcfromtimestamp(data.get("endTime") // 1000.0).time()
+                note = data.get("note")
+                
+                winner = data.get("winner")
+                if (winner == "Draw"):
+                    POINT.objects.filter(point_ID=pointID).update(
+                    endTime=endTime,
+                    note=note
+                )
+                else:
+                    winner = TEAM.objects.get(teamAcronym=winner)
+                    POINT.objects.filter(point_ID=pointID).update(
+                    endTime=endTime,
+                    winner=TEAM.objects.get(team_ID=winner.team_ID),
+                    note=note
+                )                
+            elif request_type == "timeout": #Timeout
+                matchID = data.get("matchId")
+                pointID = POINT.objects.filter(match=matchID).last().point_ID
+                timeout_type = data.get("type")
+                note = data.get("note")
+                
+                if (timeout_type == "Official"):
+                    TIMEOUT.objects.create(point=POINT.objects.get(point_ID=pointID), 
+                                            type=timeout_type, 
+                                            note=note)
+                else:
+                    takenBy = data.get("takenBy")
+                    TIMEOUT.objects.create(point=POINT.objects.get(point_ID=pointID), 
+                                            type=timeout_type, 
+                                            takenBy=TEAM.objects.get(teamAcronym=takenBy), 
+                                            note=note)
+                    
+            return JsonResponse({"success": "Match updated successfully."}, status=200)
        
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            return JsonResponse({"error": request + ":" + str(e)}, status=500)
     
     return JsonResponse({"error": 'Invalid request method'}, status=400)
     
