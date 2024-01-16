@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title id="title">Game Clock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
+    
+    .navbar {
+        background-color: #3f51b5;
+        color: white;
+        font-size: 20px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0px 20px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar button {
+        font-weight: bold;
+        font-size: 20px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        color: white;
+    }
+    
+    .container {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .settings-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        transition: left 0.3s ease-in-out;
+      }
+  
+    .settings-overlay.open {
+        left: 0;
+    }
+  
+    .settings-page {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        background-color: #f5f5f5;
+        padding: 0px;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(100%);
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  
+    .settings-overlay.open .settings-page {
+        transform: translateX(0);
+    }
+  
+    .settings-content label,
+    .settings-content input {
+        margin-bottom: 10px;
+        margin-left: 5px;
+    }  
+
+    .settings-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        transition: left 0.3s ease-in-out;
+    }
+
+    .settings-overlay.open {
+        left: 0;
+    }
+
+    .settings-page {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        background-color: #f5f5f5;
+        padding: 0px;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(100%);
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .settings-overlay.open .settings-page {
+        transform: translateX(0);
+    }
+
+    .settings-content label,
+    .settings-content input {
+        margin-bottom: 10px;
+        margin-left: 5px;
+    }
+    
+    .timer {
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        padding: 10px;
+        font-size: 70px;        
+    }
+
+    .timer span {
+        color: #ff0000;
+    }
+    
+    .buttons {
+        margin-top: 20px;
+    }
+    
+    .buttons button {
+        background-color: #fff;
+        border: none;
+        color: black;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 50px;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 5px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }    
+    
+    .info-table {
+        width: 100%;
+        margin: 0px;
+        border-collapse: collapse;
+        font-size: 15px;
+    }
+    
+    .info-table td {
+        border: 1px solid #ddd;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .table-title {
+        background-color: #f5f5f5;        
+    }
+    
+    .table-text {
+        background-color: #f9f9f9;
+    }
+    
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .popup-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #f5f5f5;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        width: 80%; /* Adjust as needed */
+        max-width: 500px; /* Adjust as needed */
+    }      
+    
+    .popup-navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }   
+
+    .popup-options {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .popup-options button {
+        background-color: #fff;
+        border: none;
+        color: black;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        cursor: pointer;
+        width: 90%;
+        border-radius: 5px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }  
+        
+    .switch {
+        position: relative; 
+        display: inline-block; 
+        width: 60px; 
+        height: 34px;
+        margin-top: 5px;
+    } 
+  
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+  
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+  
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+  
+    input:checked + .slider {
+        background-color: #3f51b5;
+    }
+  
+    input:focus + .slider {
+        box-shadow: 0 0 1px #3f51b5;
+    }
+  
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .slider:after {
+        color: white;
+        display: block;
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        font-size: 10px;
+        font-family: Verdana, sans-serif;
+    }
+
+    @media (hover: hover) {
+        /* Only apply hover effect on devices that support hover */
+        .button:hover{
+            background-color: #f0f0f0;
+        }      
+        .buttons button:hover {
+            background-color: #f0f0f0;
+        }
+        .popup-options button:hover {
+            background-color: #f0f0f0;
+        }
+    }
+      
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <span class="title" id="navbar-title">Game Clock</span>
+    <button class="settings-button" onclick="openSettings()">&#9965;</button>
+  </div>
+
+  <div class="container">    
+    <div class="timer">
+        <span id="timer-text">25:00</span>
+    </div>        
+    <div class="buttons">
+        <button id="time-button" onclick="timeout(this)">RESUME</button><br>
+        <button id="point-button" onclick="point(this)">START POINT</button>
+    </div>
+    <div>
+        <table class="info-table">
+            <tbody>
+            <tr>
+                <td class="table-text" id="team1-name">{{ team1 }}</td>
+                <td class="table-text" id="team2-name">{{ team2 }}</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="table-title">Timeouts Left</td>
+            </tr>
+            <tr>
+                <td class="table-text" id="team1-timeouts">{{ team1Timeouts }}</td>
+                <td class="table-text" id="team2-timeouts">{{ team2Timeouts }}</td>
+            </tr>            
+            <tr>
+                <td colspan="2" class="table-title">Points</td>
+            </tr>
+            <tr>
+                <td class="table-text" id="team1-pts">{{ team1Score }}</td>
+                <td class="table-text" id="team2-pts">{{ team2Score }}</td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <div class="navbar" id="popup-navbar"></div>
+            <div class="popup-options" id="popup-options"></div>
+        </div>
+    </div>   
+    
+  <div class="settings-overlay">
+    <div class="settings-page" id="settings">
+      <div class="navbar" style="margin-bottom: 20px">
+        <span>Settings</span>
+        <button class="close-button" onclick="closeSettings()">&#88;</button>
+      </div>
+      <div class="settings-content">
+        <label for="timer">Game Clock:</label>
+        <input type="number" id="minutes" min="0" max="99" value="25" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"> :
+        <input type="number" id="seconds" min="0" max="59" value="0" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"><br>
+
+        <label for="half">Half:</label>
+        <select id="half" onchange="updateHalf(this)">
+            <option value="1st">1st</option>
+            <option value="2nd">2nd</option>
+            <option value="OT">OT</option>
+        </select><br>
+
+      </div>
+    </div>
+    </div>
+    
+  <script>
+    var side = "gameClock";
+    var endTime = new Date(`{{ endTime }}`).getTime();
+    var timePaused = new Date(`{{ timePaused }}`).getTime();
+    var timeoutEndTime = new Date(`{{ timeoutEndTime }}`).getTime();
+    var paused = {{ paused|lower }};
+    var middleOfPoint = {{ middleOfPoint|lower }};
+    var activeTimeout = {{ activeTimeout|lower }};
+    var half = "{{ half }}";
+    var url = "ws://" + window.location.host + "/ws/match/{{ matchId }}/";
+
+    const socket = new WebSocket(url);
+    socket.onopen = function(event) {
+        console.log("WebSocket connection established.");
+        updatePage(null)
+    };
+    
+    socket.onmessage = function(event) {
+        console.log("Received message: " + event.data);
+        updatePage(event);
+    };
+
+    socket.onclose = function(event) {
+        console.log("WebSocket connection closed");
+    };
+
+    // Settings page functions
+    function openSettings() {
+        document.querySelector('.settings-overlay').classList.add('open');
+    }
+
+    function closeSettings() {
+        document.querySelector('.settings-overlay').classList.remove('open');
+    }
+
+    const settingsOverlay = document.querySelector('.settings-overlay');
+    settingsOverlay.addEventListener('click', (event) => {
+        if (event.target === settingsOverlay) {
+            closeSettings();
+        }
+    });
+
+    function checkInput(input) {
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        if (input.value > max) {
+            input.value = max;
+        } else if (input.value < min) {
+            input.value = min;
+        }
+    }
+
+    function updateServer() {
+        var text = JSON.stringify({
+            "match_id": {{ matchId }},
+            "side": side,
+            "endTime": new Date(endTime).toISOString(),
+            "timePaused": new Date(timePaused).toISOString(),
+            "timeoutEndTime": new Date(timeoutEndTime).toISOString(),
+            "paused": paused,
+            "middleOfPoint": middleOfPoint,
+            "activeTimeout": activeTimeout,
+            "half": half,
+        })
+
+        socket.send(text);
+    }
+
+    function timer(startTime, endTime) {
+        var diff = endTime - startTime;
+
+        if (activeTimeout) {
+            diff = timeoutEndTime - startTime;            
+        }
+
+        if (diff < 0) {
+            diff = 0;
+            if (activeTimeout) {
+                activeTimeout = false; 
+                pause();
+                timer(new Date().getTime(), endTime); // Update timer
+                return;
+            }                  
+        }
+
+        // Minutes
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        // Seconds
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (!activeTimeout) {
+            document.getElementById("minutes").value = minutes;
+            document.getElementById("seconds").value = seconds;
+            document.getElementById("timer-text").style.color = "#ff0000";
+        }
+        
+        if (seconds < 10) {
+            seconds = "0" + String(seconds);
+        }
+
+        document.getElementById("timer-text").innerHTML = minutes + ":" + seconds;
+    }
+
+    var intervalId = null;
+
+    function startInterval() {
+        intervalId = setInterval(() => {
+            timer(new Date().getTime(), endTime);
+        }, 100); // Execute timer every 100 milliseconds
+    }
+
+    function timeout(element) {
+        const type = element.innerHTML.toLowerCase().replace(" ", "");
+        
+        if (type === "resume") {
+            if (!middleOfPoint) {
+                window.alert("Please start the point before resuming the game.");
+                return;
+            }
+            
+            element.innerHTML = "TIMEOUT";
+            unpause();
+
+        } else if (type == "timeout") {
+            pause();
+            showPopup(element);
+            document.getElementById('time-button').innerHTML = "RESUME";
+        } else if (type == "endtimeout") {
+            activeTimeout = false;
+            pause();
+            timer(new Date().getTime(), endTime); // Update timer
+            document.getElementById('time-button').innerHTML = "RESUME";
+        }
+    }
+
+    function point(element) {
+        const type = element.innerHTML.toLowerCase().replace(" ", "");
+
+        if (type === "startpoint") {
+            element.innerHTML = "END POINT";
+            document.getElementById('time-button').innerHTML = "TIMEOUT";
+            middleOfPoint = true;
+            updateDatabase("startpoint", null, null);            
+            unpause();
+        } else if (type === "endpoint") {
+            if (!activeTimeout) {
+                document.getElementById('time-button').innerHTML = "RESUME";
+            } else {
+                window.alert("Please end timeout before ending the point");
+                return
+            }
+            if (!paused) {
+                pause(); 
+            }                             
+            showPopup(element);          
+        }
+    }
+
+    function pause() {
+        clearInterval(intervalId); // Pause the interval
+        paused = true;
+        timePaused = new Date().getTime();
+        updateServer();
+    }
+
+    function unpause() {
+        startInterval(); // Resume the interval
+        paused = false;
+        endTime = endTime + (new Date().getTime() - timePaused);
+        updateServer();
+    }
+
+    function showPopup(element) {       
+        const popupNavbar = document.getElementById('popup-navbar');
+        const popupOptions = document.getElementById('popup-options');        
+        const type = element.innerHTML.toLowerCase().replace(" ", "");             
+
+        // Popup navbar
+        popupNavbar.innerHTML = `<span>${element.innerHTML}</span>`;
+        popupNavbar.innerHTML += `<button class="close" id="${type}" value="close" onclick="closePopup(event.target)">&#88;</button>`;
+    
+        // Popup content
+        popupOptions.innerHTML = '';
+        var options = [];
+        
+        if (type === 'timeout') {
+            team1Timeouts = document.getElementById('team1-timeouts').innerHTML;
+            team2Timeouts = document.getElementById('team2-timeouts').innerHTML;
+            if (team1Timeouts > 0) {
+                options.push('{{ team1 }}');
+            }
+            if (team2Timeouts > 0) {
+                options.push('{{ team2 }}');
+            }
+            options.push('Official');                                           
+        } else if (type === 'endpoint') {
+            options = ['{{ team1 }}', '{{ team2 }}', 'Draw'];            
+        }
+
+        options.forEach(option => {                
+            const button = document.createElement('button');
+            button.innerText = option;
+            button.id = type;
+            button.value = option;
+            button.onclick = () => closePopup(button);
+            popupOptions.appendChild(button);
+        });        
+        document.getElementById('popup').style.display = 'block';
+    }    
+    
+    function closePopup(element) {        
+        document.getElementById('popup').style.display = 'none';
+        if (element.value === "close") {
+            return;
+        } 
+        
+        if (element.id === "timeout") {
+            activeTimeout = true;
+            endTime = endTime + (new Date().getTime() - timePaused);            
+            if (element.value === "Official") {
+                //10000 * 3600
+                timeoutEndTime = new Date().getTime() + 10000 * 3600;
+            } else {
+                // 30 sec = 30000
+                timeoutEndTime = new Date().getTime() + 30000;
+            }
+            paused = false;
+            startInterval();
+            document.getElementById("timer-text").style.color = "#00ffff";
+            document.getElementById('time-button').innerHTML = "END TIMEOUT";
+
+            // Prombt user for note
+            var note = window.prompt("Enter a note for the timeout:", "");
+            updateDatabase("timeout", element.value, note);
+        } else if (element.id === "endpoint") {
+            middleOfPoint = false;
+            paused = true;
+            activeTimeout = false;
+            
+            timer(new Date().getTime(), endTime);
+            document.getElementById('point-button').innerHTML = "START POINT";
+            document.getElementById('time-button').innerHTML = "RESUME";
+
+            // Prombt user for note
+            var note = window.prompt("Enter a note for the point:", "");
+            updateDatabase("endpoint", element.value, note);
+            clearInterval(intervalId);
+        }
+        updateServer();   
+    } 
+
+    function updateDatabase(request, team, note) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "update", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        // Get the CSRF token from the cookie
+        var csrftoken = getCookie('csrftoken');
+
+        // Set the CSRF token in the request header
+        xhr.setRequestHeader('X-CSRFToken', csrftoken);
+
+        // Define the callback function to handle the response
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    // Request was successful
+                    console.log('Entry added successfully');
+                } else {
+                    // Error handling
+                    console.error('Error adding entry:', xhr.statusText);
+                }
+            }
+        };
+
+        var json;
+        if (request == "startpoint") {
+            json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},                                
+                    "half": half,
+                    "startTime": new Date().getTime(),                
+                });
+        } else if (request == "endpoint") {
+            json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},                                
+                    "winner": team,
+                    "endTime": new Date().getTime(),
+                    "note": note,                
+                });
+        } else if (request == "timeout") {
+            if (team == "Official") {
+                type = "Official";
+                team = null;
+            } else {
+                type = "Team";
+            }
+            json = JSON.stringify({
+                    "request": request,
+                    "matchId": {{ matchId }},
+                    "type": type,
+                    "takenBy": team,
+                    "note": note,                
+                });
+        }
+        console.log(json);
+
+        xhr.send(json);
+    }
+
+    // Function to get the CSRF token from the cookie
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+    
+    function updateTimer(element) {
+        const value = element.value;
+        var currentTime = new Date().getTime();
+        if (element.id === "minutes") {
+            const secondsLeft = document.getElementById("seconds").value;
+            endTime = currentTime + (value * 60000) + (secondsLeft * 1000);
+        } else if (element.id === "seconds") {
+            const minutesLeft = document.getElementById("minutes").value;
+            endTime = currentTime + (minutesLeft * 60000) + (value * 1000);
+        }
+        if (paused) {
+            timePaused = currentTime;
+        }
+        timer(currentTime, endTime);
+        updateServer();
+    }
+
+    function updateHalf(element) {
+        half = element.value;
+        updateServer();
+    }
+
+    // Update webpage
+    function updatePage(e) {
+        if (e != null) {
+            var response = JSON.parse(e.data);
+            endTime = new Date(response['halfEndTime']).getTime();
+            timePaused = new Date(response['timePaused']).getTime();
+            timeoutEndTime = new Date(response['timeoutEndTime']).getTime();
+            paused = response.paused;
+            middleOfPoint = response.middleOfPoint;
+            activeTimeout = response.activeTimeout;
+            half = response.half;
+        }
+        
+        if (middleOfPoint) {
+            document.getElementById('point-button').innerHTML = "END POINT";            
+            if (activeTimeout && !paused) {
+                document.getElementById('time-button').innerHTML = "END TIMEOUT";
+                document.getElementById("timer-text").style.color = "#00ffff";
+            } else if (!activeTimeout && paused) {
+                document.getElementById('time-button').innerHTML = "RESUME";
+            } else {
+                document.getElementById('time-button').innerHTML = "TIMEOUT";
+            }            
+        } else {
+            document.getElementById('point-button').innerHTML = "START POINT";
+            document.getElementById('time-button').innerHTML = "RESUME";
+        }
+
+        if (paused) {
+            if (intervalId != null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            timer(timePaused, endTime);
+        } else {
+            if (intervalId == null) {
+                startInterval();
+            }            
+            timer(new Date().getTime(), endTime);
+        }
+
+        if (half === "1st") {
+            document.getElementById("navbar-title").innerHTML = "Game Clock - 1st Half";
+        } else if (half === "2nd") {
+            document.getElementById("navbar-title").innerHTML = "Game Clock - 2nd Half";
+        } else if (half === "OT") {
+            document.getElementById("navbar-title").innerHTML = "Game Clock - OT";
+        }
+
+        document.getElementById("half").value = half;     
+    }
+
+  </script>
+</body>
+</html>
