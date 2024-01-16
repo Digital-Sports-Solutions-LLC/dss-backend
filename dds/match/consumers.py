@@ -49,7 +49,11 @@ async def async_update_match(json_data):
     match_id = json_data["match_id"]
 
     # Retrieve existing MatchData instance from cache
-    data = MatchData("match" + str(match_id))
+    data = MatchData(match_id)
+    cached_data = cache.get("match" + str(match_id))
+
+    if cached_data is not None:
+        data.__dict__ = cached_data
 
     if json_data["side"] == "shotClock1":
         data.team1EndTime = json_data["endTime"]
@@ -71,10 +75,9 @@ async def async_update_match(json_data):
         data.middleOfPoint = json_data["middleOfPoint"]
         data.activeTimeout = json_data["activeTimeout"]
         data.half = json_data["half"]
-        
 
+    # Update the cache
     await database_sync_to_async(cache.set)("match" + str(match_id), data.__dict__, cacheLength)
-
 
 class MatchConsumer(AsyncWebsocketConsumer):
     async def connect(self):
