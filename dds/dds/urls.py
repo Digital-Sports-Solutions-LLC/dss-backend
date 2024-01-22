@@ -41,6 +41,7 @@ urlpatterns = [
     path('event/', include('event.urls')),
     path('timeout/', include('timeout.urls')),
     path('user_team/', include('user_team.urls')),
+    path('rules/', include('rules.urls')),
 ]
 
 if settings.DEBUG:
