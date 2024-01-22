@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .shotclock-container {
+            height: 50px; /* Adjust the height as needed */
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .team-name, .score {
+            font-weight: bold;
+        }
+
+        .score-word {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>{{ match }}</h1>
+
+    <table>
+        <tr>
+            <td> {{ team1 }} </td>
+            <td></td>
+            <td> {{ team2 }} </td>
+        </tr>
+        <tr>
+           <td> <div class="shotclock-container"> <span class="shotclock" id="team1Shotclock"> 0 </span> </div> </td>
+           <td> {{ half }} </td> 
+           <td> <div class="shotclock-container"> <span class="shotclock" id="team2Shotclock"> 0 </span> </div> </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td id="gameClock"> 00:00 </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td> Court {{ courtNumber }} </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td> {{ team1Score }} </td>
+            <td> Score</td>
+            <td> {{ team2Score }} </td>
+        </tr>
+        <tr>
+            <td> {{ team1Timeouts }} </td>
+            <td> TOL </td>
+            <td> {{ team2Timeouts }} </td>
+        </tr>
+    </table>
+    <div class="video-container">
+        {% if url %}
+            <a href="{{ url }}" target="_blank">Watch Live</a>
+        {% endif %}
+    </div>
+
+    <script>
+        var gcEndTime = new Date(`{{ gcEndTime }}`).getTime();
+        var gcTimePaused = new Date(`{{ gcTimePaused }}`).getTime();
+        var timeoutEndTime = new Date(`{{ timeoutEndTime }}`).getTime();
+        var gcPaused = {{ gcPaused|lower }};
+        var middleOfPoint = {{ middleOfPoint|lower }};
+        var activeTimeout = {{ activeTimeout|lower }};
+
+        var t1EndTime = new Date(`{{ t1EndTime }}`).getTime();
+        var t1TimePaused = new Date(`{{ t1TimePaused }}`).getTime();
+        var t1Paused = {{ t1Paused|lower }};
+        var t1CountDuration = '{{ t1CountDuration }}';
+
+        var t2EndTime = new Date(`{{ t2EndTime }}`).getTime();
+        var t2TimePaused = new Date(`{{ t2TimePaused }}`).getTime();
+        var t2Paused = {{ t2Paused|lower }};
+        var t2CountDuration = '{{ t2CountDuration }}';
+
+        var url = "ws://" + window.location.host + "/ws/match/{{ matchId }}/";
+
+        const socket = new WebSocket(url);
+        socket.onopen = function(event) {
+            console.log("WebSocket connection established.");
+            updatePage(null)
+        };
+        
+        socket.onmessage = function(event) {
+            console.log("Received message: " + event.data);
+            updatePage(event);
+        };
+    
+        socket.onclose = function(event) {
+            console.log("WebSocket connection closed");
+        };
+
+        function timer(side, startTime, endTime) {
+            var diff = endTime - startTime;
+            if (diff < 0) {
+                diff = 0;
+            }
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            if (side == "t1") {
+                document.getElementById("team1Shotclock").innerHTML = seconds;
+            } else if (side == "t2") {
+                document.getElementById("team2Shotclock").innerHTML = seconds;
+            } else {
+                // Minutes
+                var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                if (seconds < 10) {
+                    seconds = "0" + String(seconds);
+                }
+                document.getElementById("gameClock").innerHTML = minutes + ":" + seconds;
+            }
+        }
+
+        var gcIntervalId = null;
+        var t1IntervalId = null;
+        var t2IntervalId = null;
+
+        function startInterval(side) {
+            var intervalIdVariable = side + "IntervalId";
+            console.log(intervalIdVariable);
+            
+            // Clear any existing interval for the provided side
+            clearInterval(window[intervalIdVariable]);
+
+            // Set up a new interval for the provided side
+            window[intervalIdVariable] = setInterval(function() {
+                var now = new Date().getTime();                
+                var endTime;
+
+                if (side == "t1") {
+                    endTime = t1EndTime;
+                } else if (side == "t2") {
+                    endTime = t2EndTime;
+                } else {
+                    endTime = gcEndTime;
+                }
+
+                timer(side, now, endTime);
+            }, 100);
+        }
+
+        function updatePage(e) {
+            if (e != null) {
+                var response = JSON.parse(e.data);
+                gcEndTime = new Date(response['halfEndTime']).getTime();
+                gcTimePaused = new Date(response['timePaused']).getTime();
+                timeoutEndTime = new Date(response['timeoutEndTime']).getTime();
+                gcPaused = response.paused;
+                middleOfPoint = response.middleOfPoint;
+                activeTimeout = response.activeTimeout;
+                half = response.half;
+
+                t1EndTime = new Date(response['team1EndTime']).getTime();
+                t1TimePaused = new Date(response['team1TimePaused']).getTime();
+                t1Paused = response.team1Paused;                
+                t1CountDuration = response.team1CountDuration;
+
+                t2EndTime = new Date(response['team2EndTime']).getTime();
+                t2TimePaused = new Date(response['team2TimePaused']).getTime();
+                t2Paused = response.team2Paused;
+                t2CountDuration = response.team2CountDuration;
+            }
+
+            if (gcPaused || activeTimeout) {
+                if (gcIntervalId != null) {
+                    clearInterval(gcIntervalId);
+                    gcIntervalId = null;
+                }
+                timer("gc", gcTimePaused, gcEndTime);
+            } else {
+                if (gcIntervalId == null) {
+                    startInterval("gc");
+                }            
+                timer("gc", new Date().getTime(), gcEndTime);
+            }
+
+            if (t1Paused) {
+                if (t1IntervalId != null) {
+                    clearInterval(t1IntervalId);
+                    t1IntervalId = null;
+                }
+                timer("t1", t1TimePaused, t1EndTime);
+            } else {
+                if (t1IntervalId == null) {
+                    startInterval("t1");
+                }            
+                timer("t1", new Date().getTime(), t1EndTime);
+            }
+
+            if (t2Paused) {
+                if (t2IntervalId != null) {
+                    clearInterval(t2IntervalId);
+                    t2IntervalId = null;
+                }
+                timer("t2", t2TimePaused, t2EndTime);
+            } else {
+                if (t2IntervalId == null) {
+                    startInterval("t2");
+                }            
+                timer("t2", new Date().getTime(), t2EndTime);
+            }           
+        }
+
+    </script>
+</body>
+</html>

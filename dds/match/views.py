@@ -1,6 +1,7 @@
 import datetime
 import json
 from django.shortcuts import render
+from court.models import COURT
 from rest_framework import generics
 from .models import MATCH
 from point.models import POINT
@@ -68,7 +69,7 @@ def index(request):
     }
         
     return render(request, "home.html", context)
-
+    
 def match(request, pk):
     match = MATCH.objects.get(match_ID=pk)
     context = {
@@ -116,6 +117,7 @@ def referee(request, pk):
     
     context = {
         "matchId": match.match_ID,
+        "match": match.court_event,
         "team1": match.team1.teamAcronym,
         "team1Score": getScore(match.team1.team_ID, match.match_ID),
         "team2": match.team2.teamAcronym,  
@@ -137,6 +139,48 @@ def referee(request, pk):
     
     return render(request, "gameClocker.html", context)
 
+def spectator(request, pk):
+    match = MATCH.objects.get(match_ID=pk)
+    data = get_data(pk)
+    
+    context = {
+        "matchId": match.match_ID,
+        "courtNumber": match.court_event.courtNumber,
+        "match": match.court_event.event.name,
+        "team1": match.team1.teamAcronym,
+        "team1Score": getScore(match.team1.team_ID, match.match_ID),
+        "team2": match.team2.teamAcronym,  
+        "team2Score": getScore(match.team2.team_ID, match.match_ID),
+        "url": COURT.objects.get(court_ID=match.court_event.court_ID).link,       
+    }
+    
+    context["gcEndTime"] = data["halfEndTime"]
+    context["gcTimePaused"] = data["timePaused"]
+    context["timeoutEndTime"] = data["timeoutEndTime"]
+    context["gcPaused"] = data["paused"]
+    context["middleOfPoint"] = data["middleOfPoint"]
+    context["activeTimeout"] = data["activeTimeout"]
+    context["half"] = data["half"]
+    
+    context["t1EndTime"] = data["team1EndTime"]
+    context["t1TimePaused"] = data["team1TimePaused"]
+    context["t1UndoTime"] = data["team1UndoTime"]
+    context["t1Paused"] = data["team1Paused"]
+    context["t1CountDuration"] = data["team1CountDuration"]
+    
+    context["t2EndTime"] = data["team2EndTime"]
+    context["t2TimePaused"] = data["team2TimePaused"]
+    context["t2UndoTime"] = data["team2UndoTime"]
+    context["t2Paused"] = data["team2Paused"]
+    context["t2CountDuration"] = data["team2CountDuration"]
+    
+    vals = getPointIDsInHalf(match.match_ID, data["half"])
+        
+    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"])
+    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"])
+    
+    return render(request, "spectator.html", context)
+
 def update(request, pk):
     if request.method == "POST":                
         try:
@@ -146,7 +190,7 @@ def update(request, pk):
             if request_type == "startpoint": #Start Point
                 matchID = data.get("matchId")
                 half = data.get("half")
-                startTime = datetime.datetime.utcfromtimestamp(data.get("startTime") // 1000.0).time()                
+                startTime = data.get("startTime")                
                 pointNumber = POINT.objects.filter(match=matchID).count() + 1
                 
                 POINT.objects.create(match=MATCH.objects.get(match_ID=matchID), 
@@ -157,7 +201,7 @@ def update(request, pk):
             elif request_type == "endpoint": #Endpoint
                 matchID = data.get("matchId")
                 pointID = POINT.objects.filter(match=matchID).last().point_ID
-                endTime = datetime.datetime.utcfromtimestamp(data.get("endTime") // 1000.0).time()
+                endTime = data.get("endTime")
                 note = data.get("note")
                 
                 winner = data.get("winner")

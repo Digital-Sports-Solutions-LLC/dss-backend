@@ -276,11 +276,11 @@
             {% comment %} <label for="players">Players:</label>
             <input type="number" id="players" min="0" max="99" value="0" onchange="updateServer(this)"><br> {% endcomment %}
       
-            <label for="timeouts">Timeouts:</label>
-            <input type="number" id="timeouts" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+            {% comment %} <label for="timeouts">Timeouts:</label>
+            <input type="number" id="timeouts" min="0" max="99" value="0" onchange="updateServer(this)"><br> {% endcomment %}
       
-            <label for="points">Points:</label>
-            <input type="number" id="points" min="0" max="99" value="0" onchange="updateServer(this)"><br>
+            {% comment %} <label for="points">Points:</label>
+            <input type="number" id="points" min="0" max="99" value="0" onchange="updateServer(this)"><br> {% endcomment %}
 
           </div>
         </div>
@@ -289,10 +289,10 @@
     <script>
     var side = {{ num }}
     var endTime = new Date(`{{ endTime }}`).getTime();
-    var timePaused = new Date('{{ timePaused }}').getTime();
+    var timePaused = new Date(`{{ timePaused }}`).getTime();
     var undoTime = new Date('{{ undoTime }}').getTime();
     var paused = {{ paused|lower }};
-    var countDuration = '{{ countDuration }}'
+    var countDuration = '{{ countDuration }}';
     var url = "ws://" + window.location.host + "/ws/match/{{ matchId }}/";
 
     var socket = new WebSocket(url);
@@ -338,7 +338,7 @@
     function updateServer() { 
 
         var text = JSON.stringify({
-            "match_id": {{ matchID }},
+            "match_id": {{ matchId }},
             "side": "shotClock"+side,
             "endTime": new Date(endTime).toISOString(),
             "timePaused": new Date(timePaused).toISOString(),
