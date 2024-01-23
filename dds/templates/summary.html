@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>{{ match }} - Court {{ courtNumber }}</h1>
+    <h3>{{ team1 }} {{ team1Score }} : {{ team2Score }} {{ team2 }}</h3>
+    <table>
+        {% for point in points %}
+            <tr>
+                <h4>Point {{ point.pointNumber }}: </h4>
+                <h4>Half: {{ point.half }}</h4>
+                {% if point.winner != None %}
+                    <h4>Winner: {{ point.winner.teamAcronym }}</h4>
+                {% endif %}
+                {% for timeout in timeouts %}
+                    {% if point.point_ID == timeout.point.point_ID %}
+                        <h4>Type: {{ timeout.type }} </h4>
+                        {% if timeout.team != None %}
+                            <h4>Taken By: {{ timeout.team.teamAcronym }} </h4>
+                        {% endif %}
+                        {% if timeout.note != "" %}
+                            <h4>Note: {{ timeout.note }} </h4>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </table>
+
+</body>
+</html>
