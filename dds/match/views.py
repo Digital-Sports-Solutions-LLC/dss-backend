@@ -217,6 +217,46 @@ def spectator(request, pk):
     
     return render(request, "spectator.html", context)
 
+def summary(request, pk):
+    match = MATCH.objects.get(match_ID=pk)
+        
+    context = {
+        "matchId": match.match_ID,
+        "courtNumber": match.court_event.courtNumber,
+        "match": match.court_event.event.name,
+        "team1": match.team1.teamAcronym,
+        "team1Score": getScore(match.team1.team_ID, match.match_ID),
+        "team2": match.team2.teamAcronym,  
+        "team2Score": getScore(match.team2.team_ID, match.match_ID),
+        "points": POINT.objects.filter(match=pk),
+        "timeouts": [],
+    }
+    
+    for point in POINT.objects.filter(match=pk):
+        for timeout in TIMEOUT.objects.filter(point=point.point_ID):
+            context["timeouts"].append(timeout)
+    
+    # points = POINT.objects.filter(match=pk)
+    # context["numberOfPoints"] = len(points)
+    
+    # for point in points: 
+    #     pointNum = str(point.pointNumber)
+    #     if point.winner.active:
+    #         context["point" + pointNum + "Winner"] = point.winner.teamAcronym
+    #     context["point" + pointNum + "half"] = point.half
+        
+    #     timeouts = TIMEOUT.objects.filter(point=point.point_ID)
+    #     if timeouts.exists():
+    #         for num, timeout in enumerate(timeouts, start=1):
+    #             context[f"point{pointNum}Timeout{num}type"] = timeout.type
+    #             if timeout.takenBy.active:
+    #                 context[f"point{pointNum}Timeout{num}takenBy"] = timeout.takenBy.teamAcronym
+    #             context[f"point{pointNum}Timeout{num}note"] = timeout.note
+            
+    print(context)       
+        
+    return render(request, "summary.html", context)
+
 def update(request, pk):
     if request.method == "POST":                
         try:
