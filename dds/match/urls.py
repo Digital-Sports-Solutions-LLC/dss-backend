@@ -8,7 +8,7 @@ urlpatterns = [
     path('<int:pk>', match, name='match'),
     path('<int:pk>/SC/<int:num>', shotClocker, name='shotClocker'),
     path('<int:pk>/REF', referee, name='referee'),
-    path('<int:pk>/SPECT', spectator, name='spectator'),
+    path('<int:pk>/spectator', spectator, name='spectator'),
     path('<int:pk>/update', update, name='update'),
     path('<int:pk>/summary', summary, name='summary'),
 ]

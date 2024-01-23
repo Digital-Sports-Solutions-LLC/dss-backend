@@ -41,11 +41,27 @@
         .score-word {
             font-style: italic;
         }
+
+        .button-container {
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .button {
+            padding: 10px;
+            background-color: gray;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>{{ match }}</h1>
+    <h1>{{ match }} - Court {{ courtNumber }}</h1>
 
     <table>
         <tr>
@@ -55,18 +71,13 @@
         </tr>
         <tr>
            <td> <div class="shotclock-container"> <span class="shotclock" id="team1Shotclock"> 0 </span> </div> </td>
-           <td> {{ half }} </td> 
+            <td> 
+                <div>
+                    <p id=gameClock>00:00</p>
+                    <p>{{ half }}</p>
+                </div>
+            </td>             
            <td> <div class="shotclock-container"> <span class="shotclock" id="team2Shotclock"> 0 </span> </div> </td>
-        </tr>
-        <tr>
-            <td></td>
-            <td id="gameClock"> 00:00 </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td> Court {{ courtNumber }} </td>
-            <td></td>
         </tr>
         <tr>
             <td> {{ team1Score }} </td>
@@ -79,11 +90,17 @@
             <td> {{ team2Timeouts }} </td>
         </tr>
     </table>
-    <div class="video-container">
+
+    <div class="button-container">
+        <a href=summary class="button">Match Summary</a>
+    </div>
+
+    <div class="button-container">
         {% if url %}
-            <a href="{{ url }}" target="_blank">Watch Live</a>
+            <a href="{{ url }}" target="_blank" class="button">Watch Live</a>
         {% endif %}
     </div>
+    
 
     <script>
         var gcEndTime = new Date(`{{ gcEndTime }}`).getTime();

@@ -1,33 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Title Here</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1, h3, h4 {
+            color: #333;
+        }
+
+        .box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .point-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .timeout-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+            margin-left: 20px; /* Adjust the indentation as needed */
+        }
+    </style>
 </head>
 <body>
     <h1>{{ match }} - Court {{ courtNumber }}</h1>
     <h3>{{ team1 }} {{ team1Score }} : {{ team2Score }} {{ team2 }}</h3>
-    <table>
-        {% for point in points %}
-            <tr>
-                <h4>Point {{ point.pointNumber }}: </h4>
-                <h4>Half: {{ point.half }}</h4>
-                {% if point.winner != None %}
-                    <h4>Winner: {{ point.winner.teamAcronym }}</h4>
-                {% endif %}
-                {% for timeout in timeouts %}
-                    {% if point.point_ID == timeout.point.point_ID %}
-                        <h4>Type: {{ timeout.type }} </h4>
-                        {% if timeout.team != None %}
-                            <h4>Taken By: {{ timeout.team.teamAcronym }} </h4>
-                        {% endif %}
-                        {% if timeout.note != "" %}
-                            <h4>Note: {{ timeout.note }} </h4>
-                        {% endif %}
+    {% for point in points %}
+        <div class="point-label">Point {{ point.pointNumber }}:</div>
+        <div class="box">
+            <p><strong>Half:</strong> {{ point.half }}</p>
+            {% if point.winner %}
+                <p><strong>Winner:</strong> {{ point.winner.teamAcronym }}</p>
+            {% endif %}
+        </div>
+        {% if point.timeout_set.all %}
+            {% for timeout in point.timeout_set.all %}
+                <div class="timeout-box">
+                    <p><strong>Timeout:</strong> {% if timeout.type %}{{ timeout.type }}{% endif %}</p>
+                    {% if timeout.takenBy %}
+                        <p><strong>Taken By:</strong> {{ timeout.takenBy.teamAcronym }}</p>
                     {% endif %}
-                {% endfor %}
-            </tr>
-        {% endfor %}
-        </table>
-
+                    {% if timeout.note %}
+                        <p><strong>Note:</strong> {{ timeout.note }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
 </body>
 </html>
