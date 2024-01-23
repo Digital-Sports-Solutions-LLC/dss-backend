@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'match',
     'point',
     'timeout',
+    'rules'
 ]
 
 MIDDLEWARE = [
