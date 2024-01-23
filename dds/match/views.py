@@ -1,6 +1,6 @@
 import datetime
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from court.models import COURT
 from rest_framework import generics
 from .models import MATCH
@@ -12,7 +12,8 @@ from rules.models import RULES
 from .serializers import MatchSerializer
 from .consumers import get_data
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import user_passes_test
+from django.urls import reverse
 
 class MatchListCreateView(generics.ListCreateAPIView):
     queryset = MATCH.objects.all()
@@ -76,9 +77,15 @@ def index(request):
     }
         
     return render(request, "home.html", context)
+
+def match(request, pk):    
     
-def match(request, pk):
-    match = MATCH.objects.get(match_ID=pk)
+    if not request.user.is_superuser:
+        # If the user is not an admin, redirect to the spectator page
+        return redirect(reverse('spectator', args=[pk]))  
+    
+    match = MATCH.objects.get(match_ID=pk) 
+    
     context = {
         "matchID": match.match_ID,
         "event": match.court_event.event.name,
@@ -93,6 +100,11 @@ def match(request, pk):
     return render(request, "jobSelection.html", context)
 
 def shotClocker(request, pk, num):
+    
+    if not request.user.is_superuser:
+        # If the user is not an admin, redirect to the spectator page
+        return redirect(reverse('spectator', args=[pk]))
+    
     match = MATCH.objects.get(match_ID=pk)
     data = get_data(pk)
     
@@ -124,7 +136,12 @@ def shotClocker(request, pk, num):
     
     return render(request, "shotClocker.html", context)
 
-def referee(request, pk):
+def referee(request, pk):    
+    
+    if not request.user.is_superuser:
+        # If the user is not an admin, redirect to the spectator page
+        return redirect(reverse('spectator', args=[pk]))
+    
     match = MATCH.objects.get(match_ID=pk)
     data = get_data(pk)
     
