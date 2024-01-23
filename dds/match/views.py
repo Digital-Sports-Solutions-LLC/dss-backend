@@ -7,6 +7,8 @@ from .models import MATCH
 from point.models import POINT
 from timeout.models import TIMEOUT
 from team.models import TEAM
+from league_season.models import LEAGUE_SEASON
+from rules.models import RULES
 from .serializers import MatchSerializer
 from .consumers import get_data
 from django.http import JsonResponse
@@ -29,16 +31,21 @@ def getPointIDsInHalf(match_ID, half):
     point_ids = [point.point_ID for point in points]
     return point_ids
 
-def getTimeouts(team_ID, point_ID, half): 
+def getRules(season_ID, league_ID):
+    rules_ID = LEAGUE_SEASON.objects.get(season=season_ID, league=league_ID).rules.rules_ID
+    rules = RULES.objects.get(rules_ID=rules_ID)
+    return rules
+
+def getTimeouts(team_ID, point_ID, half, rules): 
     num = 0       
     for point in point_ID:
         timeouts = TIMEOUT.objects.filter(takenBy=team_ID, point=point)
         num += len(timeouts)
           
     if (half == "OT"):
-        return 1 - num
+        return rules.otTimeouts - num
     else:
-        return 2 - num
+        return rules.halfTimeouts - num
                 
 def index(request):
     
@@ -89,9 +96,15 @@ def shotClocker(request, pk, num):
     match = MATCH.objects.get(match_ID=pk)
     data = get_data(pk)
     
+    rules = getRules(match.court_event.event.season, match.court_event.event.league)
+    
     context = {
         "matchId": match.match_ID,
         "num": num,
+        "minShotClock": rules.minShotClock,
+        "maxShotClock": rules.maxShotClock,
+        "numPlayers": rules.numPlayers,
+        "maxToMinPlayers": rules.maxToMinPlayers,
     }
     
     if num == 1:
@@ -115,13 +128,17 @@ def referee(request, pk):
     match = MATCH.objects.get(match_ID=pk)
     data = get_data(pk)
     
+    rules = getRules(match.court_event.event.season, match.court_event.event.league)
+    
     context = {
         "matchId": match.match_ID,
         "match": match.court_event,
         "team1": match.team1.teamAcronym,
         "team1Score": getScore(match.team1.team_ID, match.match_ID),
         "team2": match.team2.teamAcronym,  
-        "team2Score": getScore(match.team2.team_ID, match.match_ID),        
+        "team2Score": getScore(match.team2.team_ID, match.match_ID), 
+        "length": rules.halfLength,
+        "runningClockDiff": rules.runningClockDiff,       
     }
     
     context["endTime"] = data["halfEndTime"]
@@ -134,14 +151,16 @@ def referee(request, pk):
     
     vals = getPointIDsInHalf(match.match_ID, data["half"])
         
-    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"])
-    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"])
+    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"], rules)
+    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"], rules)
     
     return render(request, "gameClocker.html", context)
 
 def spectator(request, pk):
     match = MATCH.objects.get(match_ID=pk)
     data = get_data(pk)
+    
+    rules = getRules(match.court_event.event.season, match.court_event.event.league)
     
     context = {
         "matchId": match.match_ID,
@@ -176,8 +195,8 @@ def spectator(request, pk):
     
     vals = getPointIDsInHalf(match.match_ID, data["half"])
         
-    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"])
-    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"])
+    context["team1Timeouts"] = getTimeouts(match.team1.team_ID, vals, data["half"], rules)
+    context["team2Timeouts"] = getTimeouts(match.team2.team_ID, vals, data["half"], rules)
     
     return render(request, "spectator.html", context)
 

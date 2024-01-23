@@ -307,7 +307,7 @@
 
   <div class="container">    
     <div class="timer">
-        <span id="timer-text">25:00</span>
+        <span id="timer-text">{{ length }}:00</span>
     </div>        
     <div class="buttons">
         <button id="time-button" onclick="firstButton(this)">RESUME</button><br>
@@ -354,7 +354,7 @@
       </div>
       <div class="settings-content">
         <label for="timer">Game Clock:</label>
-        <input type="number" id="minutes" min="0" max="99" value="25" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"> :
+        <input type="number" id="minutes" min="0" max="99" value="{{ 'length' }}" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"> :
         <input type="number" id="seconds" min="0" max="59" value="0" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"><br>
 
         <label for="half">Half:</label>

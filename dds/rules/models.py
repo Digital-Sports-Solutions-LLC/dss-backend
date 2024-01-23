@@ -9,6 +9,8 @@ class RULES(models.Model):
     maxToMinPlayers = models.IntegerField(blank=True, null=True)
     halfLength = models.IntegerField()
     runningClockDiff = models.IntegerField()
+    halfTimeouts = models.IntegerField()
+    otTimeouts = models.IntegerField()
         
     def __str__(self):
         return f"{self.rules_ID}: {self.minShotClock} sec - {self.halfLength} min"
