@@ -79,18 +79,34 @@
     margin-bottom: 5px;
   }
 </style>
-  <div class="scoreboard">
-    <div class="game-container">
-      {% block matches %}
-        {% for match in matches %}
-        <div class="wrapper clickable-div" onclick="window.location.href='/match/{{ match.matchID }}'">
-            <div class="row">
-              {{ match.team1 }} {{ match.team1Score }} - {{ match.team2 }} {{ match.team2Score }} {{ match.status }}
-            </div>
-            <div class="row">Court {{ match.courtNumber }}</div>
-            <div class="row">{{ match.event }} {{ match.startDate }}</div>
+<script>
+  // Check if the user is an admin and the match has not started
+  function checkAdminAndRedirect(matchId, isAdmin, matchStatus) {
+    if (matchStatus == "Not Started" && isAdmin == "False") {
+      // Alert non-admin users to wait for the match to begin
+      alert("Please wait for the match to begin.");      
+    } else if (matchStatus == "Completed") {
+      // Redirect admins to the job selection page
+      window.location.href = `/match/${matchId}/summary`;
+    } else {
+      // Redirect admins to the job selection page
+      window.location.href = `/match/${matchId}`;
+    }
+  }
+</script>
+<div class="scoreboard">
+  <div class="game-container">
+    {% block matches %}
+      {% for match in matches %}
+        <div class="wrapper clickable-div" onclick="checkAdminAndRedirect('{{ match.matchID }}', '{{ user.is_superuser }}', '{{ match.status }}')">
+          <div class="row">
+            {{ match.team1 }} {{ match.team1Score }} - {{ match.team2 }} {{ match.team2Score }} {{ match.status }}
           </div>
-        {% endfor %}
-      {% endblock matches %}
+          <div class="row">Court {{ match.courtNumber }}</div>
+          <div class="row">{{ match.event }} {{ match.startDate }}</div>
+        </div>
+      {% endfor %}
+    {% endblock matches %}
   </div>
-  {% endblock %}
+</div>
+{% endblock %}
