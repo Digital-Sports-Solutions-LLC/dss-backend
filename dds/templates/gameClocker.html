@@ -301,7 +301,7 @@
 </head>
 <body>
   <div class="navbar">
-    <span class="title" id="navbar-title">Game Clock</span>
+    <span class="title" id="navbar-title">Game Clock - {{ half }} {% if half != "OT" %}Half{% endif %}</span>
     <button class="settings-button" onclick="openSettings()">&#9965;</button>
   </div>
 
@@ -354,7 +354,7 @@
       </div>
       <div class="settings-content">
         <label for="timer">Game Clock:</label>
-        <input type="number" id="minutes" min="0" max="99" value="{{ 'length' }}" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"> :
+        <input type="number" id="minutes" min="0" max="99" value="{{ length }}" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"> :
         <input type="number" id="seconds" min="0" max="59" value="0" style="width: 40px;" onchange="checkInput(this), updateTimer(this)"><br>
 
         <label for="half">Half:</label>
@@ -681,7 +681,6 @@
                     "note": note,                
                 });
         }
-        console.log(json);
 
         // Define the callback function to handle the response
         xhr.onreadystatechange = function() {

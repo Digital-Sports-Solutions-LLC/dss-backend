@@ -74,7 +74,7 @@
             <td> 
                 <div>
                     <p id=gameClock>00:00</p>
-                    <p>{{ half }}</p>
+                    <p id="half">{{ half }}</p>
                 </div>
             </td>             
            <td> <div class="shotclock-container"> <span class="shotclock" id="team2Shotclock"> 0 </span> </div> </td>
@@ -164,7 +164,6 @@
 
         function startInterval(side) {
             var intervalIdVariable = side + "IntervalId";
-            console.log(intervalIdVariable);
             
             // Clear any existing interval for the provided side
             clearInterval(window[intervalIdVariable]);
@@ -189,6 +188,7 @@
         function updatePage(e) {
             if (e != null) {
                 var response = JSON.parse(e.data);
+                console.log(response);
                 gcEndTime = new Date(response['halfEndTime']).getTime();
                 gcTimePaused = new Date(response['timePaused']).getTime();
                 timeoutEndTime = new Date(response['timeoutEndTime']).getTime();
@@ -196,6 +196,7 @@
                 middleOfPoint = response.middleOfPoint;
                 activeTimeout = response.activeTimeout;
                 half = response.half;
+                document.getElementById("half").innerHTML = half;
 
                 t1EndTime = new Date(response['team1EndTime']).getTime();
                 t1TimePaused = new Date(response['team1TimePaused']).getTime();
@@ -206,7 +207,20 @@
                 t2TimePaused = new Date(response['team2TimePaused']).getTime();
                 t2Paused = response.team2Paused;
                 t2CountDuration = response.team2CountDuration;
-            }
+
+                if (response['team1Score'] != null) {
+                    document.getElementById("team1Score").innerHTML = response['team1Score'];
+                }
+                if (response['team2Score'] != null) {
+                    document.getElementById("team2Score").innerHTML = response['team2Score'];
+                }
+                if (response['team1Timeouts'] != null) {
+                    document.getElementById("team1Timeouts").innerHTML = response['team1Timeouts'];
+                }
+                if (response['team2Timeouts'] != null) {
+                    document.getElementById("team2Timeouts").innerHTML = response['team2Timeouts'];
+                }
+            }            
 
             if (gcPaused || activeTimeout) {
                 if (gcIntervalId != null) {
