@@ -234,26 +234,7 @@ def summary(request, pk):
     
     for point in POINT.objects.filter(match=pk):
         for timeout in TIMEOUT.objects.filter(point=point.point_ID):
-            context["timeouts"].append(timeout)
-    
-    # points = POINT.objects.filter(match=pk)
-    # context["numberOfPoints"] = len(points)
-    
-    # for point in points: 
-    #     pointNum = str(point.pointNumber)
-    #     if point.winner.active:
-    #         context["point" + pointNum + "Winner"] = point.winner.teamAcronym
-    #     context["point" + pointNum + "half"] = point.half
-        
-    #     timeouts = TIMEOUT.objects.filter(point=point.point_ID)
-    #     if timeouts.exists():
-    #         for num, timeout in enumerate(timeouts, start=1):
-    #             context[f"point{pointNum}Timeout{num}type"] = timeout.type
-    #             if timeout.takenBy.active:
-    #                 context[f"point{pointNum}Timeout{num}takenBy"] = timeout.takenBy.teamAcronym
-    #             context[f"point{pointNum}Timeout{num}note"] = timeout.note
-            
-    print(context)       
+            context["timeouts"].append(timeout)            
         
     return render(request, "summary.html", context)
 
@@ -309,6 +290,14 @@ def update(request, pk):
                                             type=timeout_type, 
                                             takenBy=TEAM.objects.get(teamAcronym=takenBy), 
                                             note=note)
+            elif request_type == "finalizeMatch":
+                matchID = data.get("matchId")
+                endTime = data.get("endTime")
+                
+                MATCH.objects.filter(match_ID=matchID).update(
+                    endTime=endTime,
+                    status="Completed"
+                )
                     
             return JsonResponse({"success": "Match updated successfully."}, status=200)
        

@@ -13,10 +13,79 @@
     <button onclick="window.location.href='{{ matchID }}/SC/2'">{{ team2 }}</button>
     <h2>Referrees</h2>
     <button onclick="window.location.href='{{ matchID }}/REF'">Game Clock</button>
+    <button onclick="finalizeMatch()">Finalize Match</button>
     <h2>Other</h2>
     <button onclick="window.location.href='{{ matchID }}/spectator'">Spectator</button>
     <button onclick="window.location.href='{{ matchID }}/summary'">Summary</button>
     <button onclick="window.alert('Feature is work in progress')">Edit</button>
     <button  onclick="window.alert('Feature is work in progress')">Stats</button>
+
+    <script>
+        // Function to finalize the match
+        function finalizeMatch() {
+            var confirmFinalize = confirm("Are you sure you want to finalize the match?");
+            if (confirmFinalize) {
+                // Call the updateDatabase function to send the update to the server
+                updateDatabase("finalizeMatch");
+            }
+        }
+
+        function updateDatabase(request) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "{{ matchID }}/update", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            // Get the CSRF token from the cookie
+            var csrftoken = getCookie('csrftoken');
+
+            // Set the CSRF token in the request header
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+
+            var now = new Date();
+            var utcHours = now.getUTCHours();
+            var utcMinutes = now.getUTCMinutes();
+            var utcSeconds = now.getUTCSeconds();
+
+            // Format the values if needed (add leading zeros)
+            utcHours = utcHours < 10 ? "0" + utcHours : utcHours;
+            utcMinutes = utcMinutes < 10 ? "0" + utcMinutes : utcMinutes;
+            utcSeconds = utcSeconds < 10 ? "0" + utcSeconds : utcSeconds;
+
+            var utcTimeString = utcHours + ":" + utcMinutes + ":" + utcSeconds;
+
+            // Build the JSON object
+            var json = JSON.stringify({
+                "request": request,
+                "matchId": {{ matchID }},
+                "match": '{{ match }}',
+                "endTime": utcTimeString,
+            });
+
+            // Define the callback function to handle the response
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // Request was successful
+                        console.log('Match finalized successfully');
+                        window.location.href = "{{ matchID }}/summary";
+                    } else {
+                        // Error handling
+                        window.alert("Error finalizing match please manually update the database" + json);
+                        console.error('Error finalizing match:', xhr.statusText);
+                    }
+                }
+            };
+
+            xhr.send(json);
+        }
+
+        // Function to get the CSRF token from the cookie
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+    </script>
+
 </body>
 </html>
