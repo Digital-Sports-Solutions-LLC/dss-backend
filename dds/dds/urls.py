@@ -42,6 +42,7 @@ urlpatterns = [
     path('timeout/', include('timeout.urls')),
     path('user_team/', include('user_team.urls')),
     path('rules/', include('rules.urls')),
+    path('court/', include('court.urls')),
 ]
 
 if settings.DEBUG:
