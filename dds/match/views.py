@@ -1,4 +1,3 @@
-import datetime
 import json
 from django.shortcuts import render, redirect
 from court.models import COURT
@@ -7,13 +6,11 @@ from .models import MATCH
 from point.models import POINT
 from timeout.models import TIMEOUT
 from team.models import TEAM
-from league_season.models import LEAGUE_SEASON
-from rules.models import RULES
 from .serializers import MatchSerializer
 from .consumers import get_data
 from django.http import JsonResponse
-from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
+from .utils import getScore, getPointIDsInHalf, getRules, getTimeouts
 
 class MatchListCreateView(generics.ListCreateAPIView):
     queryset = MATCH.objects.all()
@@ -22,31 +19,6 @@ class MatchListCreateView(generics.ListCreateAPIView):
 class MatchRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MATCH.objects.all()
     serializer_class = MatchSerializer
-    
-def getScore(team_ID, match_ID):
-    points = POINT.objects.filter(winner=team_ID, match=match_ID)
-    return len(points)
-
-def getPointIDsInHalf(match_ID, half):
-    points = POINT.objects.filter(match=match_ID, half=half)
-    point_ids = [point.point_ID for point in points]
-    return point_ids
-
-def getRules(season_ID, league_ID):
-    rules_ID = LEAGUE_SEASON.objects.get(season=season_ID, league=league_ID).rules.rules_ID
-    rules = RULES.objects.get(rules_ID=rules_ID)
-    return rules
-
-def getTimeouts(team_ID, point_ID, half, rules): 
-    num = 0       
-    for point in point_ID:
-        timeouts = TIMEOUT.objects.filter(takenBy=team_ID, point=point)
-        num += len(timeouts)
-          
-    if (half == "OT"):
-        return rules.otTimeouts - num
-    else:
-        return rules.halfTimeouts - num
                 
 def index(request):
     
@@ -82,9 +54,13 @@ def match(request, pk):
     
     if not request.user.is_superuser:
         # If the user is not an admin, redirect to the spectator page
-        return redirect(reverse('spectator', args=[pk]))  
+        return redirect(reverse('spectator', args=[pk]))
     
     match = MATCH.objects.get(match_ID=pk) 
+    
+    if match.status == "Completed":
+        # If the match is completed, redirect to the match summary page
+        return redirect(reverse('summary', args=[pk]))
     
     context = {
         "matchID": match.match_ID,
@@ -106,6 +82,11 @@ def shotClocker(request, pk, num):
         return redirect(reverse('spectator', args=[pk]))
     
     match = MATCH.objects.get(match_ID=pk)
+    
+    if match.status == "Completed":
+        # If the match is completed, redirect to the match summary page
+        return redirect(reverse('summary', args=[pk]))
+    
     data = get_data(pk)
     
     rules = getRules(match.court_event.event.season, match.court_event.event.league)
@@ -143,6 +124,11 @@ def referee(request, pk):
         return redirect(reverse('spectator', args=[pk]))
     
     match = MATCH.objects.get(match_ID=pk)
+    
+    if match.status == "Completed":
+        # If the match is completed, redirect to the match summary page
+        return redirect(reverse('summary', args=[pk]))
+    
     data = get_data(pk)
     
     rules = getRules(match.court_event.event.season, match.court_event.event.league)
@@ -175,6 +161,11 @@ def referee(request, pk):
 
 def spectator(request, pk):
     match = MATCH.objects.get(match_ID=pk)
+    
+    if match.status == "Completed":
+        # If the match is completed, redirect to the match summary page
+        return redirect(reverse('summary', args=[pk]))
+    
     data = get_data(pk)
     
     rules = getRules(match.court_event.event.season, match.court_event.event.league)
@@ -298,6 +289,8 @@ def update(request, pk):
                     endTime=endTime,
                     status="Completed"
                 )
+                
+            
                     
             return JsonResponse({"success": "Match updated successfully."}, status=200)
        
