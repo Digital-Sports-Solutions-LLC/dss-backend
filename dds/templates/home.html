@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 <style>
@@ -70,21 +70,29 @@
     width: 100%;
     box-sizing: border-box;
     padding: 20px;
-    border: 1px solid #000;
+    border: 1px solid #ddd;
     margin-bottom: 10px;
-    cursor: pointer; /* Add cursor for visual indication */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
 
-  .clickable-div .row {
-    margin-bottom: 5px;
+  .wrapper:hover {
+    background-color: #f0f0f0;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
   }
 </style>
 <script>
   // Check if the user is an admin and the match has not started
-  function checkAdminAndRedirect(matchId, isAdmin, matchStatus) {
+  function checkAdminAndRedirect(matchId, isAdmin, matchStatus, utcTime) {
     if (matchStatus == "Not Started" && isAdmin == "False") {
-      // Alert non-admin users to wait for the match to begin
-      alert("Please wait for the match to begin.");      
+      // Alert non-admin users with the original start time
+      alert("Please wait for the match to begin around " + convertUTCTimeToLocalTime(utcTime) + ".");
     } else if (matchStatus == "Completed") {
       // Redirect admins to the job selection page
       window.location.href = `/match/${matchId}/summary`;
@@ -93,17 +101,66 @@
       window.location.href = `/match/${matchId}`;
     }
   }
+
+  function convertUTCTimeToLocalTime(utcTimeString) {
+    // Assuming utcTimeString is in "hh:mm a" format
+    var timeComponents = utcTimeString.match(/(\d+):(\d+) ([ap]\.m\.)/);
+  
+    if (timeComponents) {
+      var hours = parseInt(timeComponents[1]);
+      var minutes = parseInt(timeComponents[2]);
+      var meridiem = timeComponents[3].toLowerCase();
+
+      // Adjust hours for 12-hour format
+      hours = (meridiem === 'p.m.' && hours < 12) ? hours + 12 : hours;
+
+      if (hours < 10) {
+        hours = "0" + hours;
+      }
+
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      }
+  
+      var date = new Date("2022-01-01T" + hours + ":" + minutes + ":00Z"); // Use a fixed date for parsing
+      var options = { hour: 'numeric', minute: 'numeric', hour12: true };
+      var localTime = new Intl.DateTimeFormat('en-US', options).format(date);
+  
+      return localTime;
+    }
+  
+    // If the input is not in the expected format, return the original string
+    return utcTimeString;
+  }
+
 </script>
 <div class="scoreboard">
   <div class="game-container">
     {% block matches %}
       {% for match in matches %}
-        <div class="wrapper clickable-div" onclick="checkAdminAndRedirect('{{ match.matchID }}', '{{ user.is_superuser }}', '{{ match.status }}')">
+        <div class="wrapper clickable-div" onclick="checkAdminAndRedirect('{{ match.matchID }}', '{{ user.is_superuser }}', '{{ match.status }}', '{{ match.startTime }}')">
           <div class="row">
-            {{ match.team1 }} {{ match.team1Score }} - {{ match.team2 }} {{ match.team2Score }} {{ match.status }}
+            <div>
+              {{ match.team1 }} {{ match.team1Score }} : {{ match.team2Score }} {{ match.team2 }} 
+            </div>
+            <div>
+              {% if match.status == "Not Started" %}
+              Starts around
+                <script>
+                  document.write(convertUTCTimeToLocalTime('{{ match.startTime }}'));
+                </script>
+              {% else %}
+                {{ match.status }}
+              {% endif %}
+            </div>         
           </div>
-          <div class="row">Court {{ match.courtNumber }}</div>
-          <div class="row">{{ match.event }} {{ match.startDate }}</div>
+          <div class="row">
+            <div>Court {{ match.courtNumber }}</div>
+          </div>
+          <div class="row">
+            <div>{{ match.event }}</div>
+            <div style="text-align: right;">{{ match.startDate }}</div>
+          </div>
         </div>
       {% endfor %}
     {% endblock matches %}

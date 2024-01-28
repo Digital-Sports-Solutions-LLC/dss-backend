@@ -11,6 +11,7 @@ from .consumers import get_data
 from django.http import JsonResponse
 from django.urls import reverse
 from .utils import getScore, getPointIDsInHalf, getRules, getTimeouts
+from django.db.models import Case, When, Value
 
 class MatchListCreateView(generics.ListCreateAPIView):
     queryset = MATCH.objects.all()
@@ -22,7 +23,14 @@ class MatchRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                 
 def index(request):
     
-    matches = MATCH.objects.all().order_by('-court_event__event__startDate')[:20]
+    matches = MATCH.objects.annotate(
+    in_progress=Case(
+        When(status='In Progress - 1st', then=Value(1)),
+        When(status='In Progress - 2nd', then=Value(2)),
+        When(status='In Progress - OT', then=Value(3)),
+        default=Value(0),
+    )
+    ).order_by('-in_progress', '-startTime', '-court_event__event__startDate')
     
     ret = []
     num = 0
@@ -238,49 +246,57 @@ def update(request, pk):
             if request_type == "startpoint": #Start Point
                 matchID = data.get("matchId")
                 half = data.get("half")
-                startTime = data.get("startTime")                
+                startTime = data.get("startTime")
+                gameClockStart = data.get("gameClockStart")                
                 pointNumber = POINT.objects.filter(match=matchID).count() + 1
                 
                 POINT.objects.create(match=MATCH.objects.get(match_ID=matchID), 
                                     pointNumber=pointNumber, 
                                     half=half, 
-                                    startTime=startTime)
+                                    startTime=startTime,
+                                    gameClockStart=gameClockStart)
                 MATCH.objects.filter(match_ID=matchID).update(status="In Progress - " + half)                                            
             elif request_type == "endpoint": #Endpoint
                 matchID = data.get("matchId")
                 pointID = POINT.objects.filter(match=matchID).last().point_ID
                 endTime = data.get("endTime")
                 note = data.get("note")
+                gameClockEnd = data.get("gameClockEnd")
                 
                 winner = data.get("winner")
                 if (winner == "Draw"):
                     POINT.objects.filter(point_ID=pointID).update(
                     endTime=endTime,
-                    note=note
+                    note=note,
+                    gameClockEnd=gameClockEnd
                 )
                 else:
                     winner = TEAM.objects.get(teamAcronym=winner)
                     POINT.objects.filter(point_ID=pointID).update(
                     endTime=endTime,
                     winner=TEAM.objects.get(team_ID=winner.team_ID),
-                    note=note
+                    note=note,
+                    gameClockEnd=gameClockEnd
                 )                
             elif request_type == "timeout": #Timeout
                 matchID = data.get("matchId")
                 pointID = POINT.objects.filter(match=matchID).last().point_ID
                 timeout_type = data.get("type")
                 note = data.get("note")
+                gameClockTime = data.get("gameClockTime")
                 
                 if (timeout_type == "Official"):
                     TIMEOUT.objects.create(point=POINT.objects.get(point_ID=pointID), 
                                             type=timeout_type, 
-                                            note=note)
+                                            note=note,
+                                            gameClockTime=gameClockTime)
                 else:
                     takenBy = data.get("takenBy")
                     TIMEOUT.objects.create(point=POINT.objects.get(point_ID=pointID), 
                                             type=timeout_type, 
                                             takenBy=TEAM.objects.get(teamAcronym=takenBy), 
-                                            note=note)
+                                            note=note,
+                                            gameClockTime=gameClockTime)
             elif request_type == "finalizeMatch":
                 matchID = data.get("matchId")
                 endTime = data.get("endTime")
@@ -288,9 +304,7 @@ def update(request, pk):
                 MATCH.objects.filter(match_ID=matchID).update(
                     endTime=endTime,
                     status="Completed"
-                )
-                
-            
+                )              
                     
             return JsonResponse({"success": "Match updated successfully."}, status=200)
        

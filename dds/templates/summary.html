@@ -3,60 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your Title Here</title>
+    <title>Match Summary</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
         h1, h3, h4 {
-            color: #333;
+            color: #004080;
+        }
+
+        .container {
+            margin: 0;
+            padding: 0;
         }
 
         .box {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #004080;
+            color: #fff;
         }
 
         .point-label {
             font-weight: bold;
             margin-bottom: 10px;
+            font-size: 18px;
+            color: #004080;
         }
 
         .timeout-box {
             border: 1px solid #ddd;
             padding: 10px;
             margin-top: 10px;
-            margin-left: 20px; /* Adjust the indentation as needed */
+            margin-left: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>{{ match }} - Court {{ courtNumber }}</h1>
-    <h3>{{ team1 }} {{ team1Score }} : {{ team2Score }} {{ team2 }}</h3>
-    {% for point in points %}
-        <div class="point-label">Point {{ point.pointNumber }}:</div>
-        <div class="box">
-            <p><strong>Half:</strong> {{ point.half }}</p>
-            {% if point.winner %}
-                <p><strong>Winner:</strong> {{ point.winner.teamAcronym }}</p>
-            {% endif %}
-        </div>
-        {% if point.timeout_set.all %}
-            {% for timeout in point.timeout_set.all %}
-                <div class="timeout-box">
-                    <p><strong>Timeout:</strong> {% if timeout.type %}{{ timeout.type }}{% endif %}</p>
-                    {% if timeout.takenBy %}
-                        <p><strong>Taken By:</strong> {{ timeout.takenBy.teamAcronym }}</p>
-                    {% endif %}
-                    {% if timeout.note %}
-                        <p><strong>Note:</strong> {{ timeout.note }}</p>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endfor %}
+    <div class="container">
+        <h1>{{ match }} - Court {{ courtNumber }}</h1>
+        <h3>{{ team1 }} {{ team1Score }} : {{ team2Score }} {{ team2 }}</h3>
+
+        {% for point in points %}
+            <div class="box">
+                <div class="point-label">Point {{ point.pointNumber }}</div>
+                <table>
+                    <tr>
+                        <th>Half</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Length</th>
+                        <th>Winner</th>
+                        <th>Note</th>
+                    </tr>
+                    <tr>
+                        <td>{{ point.half }}</td>
+                        <td>{{ point.gameClockStart }}</td>
+                        {% if point.gameClockEnd %}
+                            <td>{{ point.gameClockEnd }}</td>
+                            <td><span id="duration{{ point.pointNumber }}"></span></td>
+                            <td>{{ point.winner.teamAcronym|default:"Draw" }}</td>
+                            <td>{{ point.note }}</td>
+                        {% else %}
+                            <td colspan="4">Point in progress</td>
+                        {% endif %}
+                    </tr>
+                </table>
+
+                {% if point.timeout_set.all %}
+                    <div class="timeout-box">
+                        <p><strong>Timeouts:</strong></p>
+                        <table>
+                            <tr>
+                                <th>Occurred</th>
+                                <th>Taken By</th>
+                                <th>Note</th>
+                            </tr>
+                            {% for timeout in point.timeout_set.all %}
+                                <tr>
+                                    <td>{{ timeout.gameClockTime }}</td>
+                                    <td>{{ timeout.takenBy.teamAcronym|default:"Official" }}</td>
+                                    <td>{{ timeout.note }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function calculateTimeDifference(start, end, durationId) {
+            var startComponents = start.split(":");
+            var endComponents = end.split(":");
+    
+            var startMinutes = parseInt(startComponents[0], 10);
+            var startSeconds = parseInt(startComponents[1], 10);
+            var endMinutes = parseInt(endComponents[0], 10);
+            var endSeconds = parseInt(endComponents[1], 10);
+    
+            var totalStartSeconds = startMinutes * 60 + startSeconds;
+            var totalEndSeconds = endMinutes * 60 + endSeconds;
+    
+            var timeDiffSeconds = totalEndSeconds - totalStartSeconds;
+            var diffMinutes = Math.floor(Math.abs(timeDiffSeconds) / 60);
+            var diffSeconds = Math.abs(timeDiffSeconds) % 60;
+    
+            var durationElement = document.getElementById(durationId);
+            durationElement.textContent = (timeDiffSeconds >= 0 ? '' : '') + diffMinutes + ":" + (diffSeconds < 10 ? "0" : "") + diffSeconds;
+        }
+    
+        {% for point in points %}
+            var start{{ point.pointNumber }} = "{{ point.gameClockStart }}";
+            var end{{ point.pointNumber }} = "{{ point.gameClockEnd }}";
+            var durationId{{ point.pointNumber }} = "duration{{ point.pointNumber }}";
+            calculateTimeDifference(start{{ point.pointNumber }}, end{{ point.pointNumber }}, durationId{{ point.pointNumber }});
+        {% endfor %}
+    </script>
 </body>
 </html>

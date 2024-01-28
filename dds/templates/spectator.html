@@ -6,28 +6,31 @@
     <title>Event Title</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 20px;
+            background-color: #f4f4f4;
         }
 
         h1 {
             text-align: center;
+            color: #004080;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background-color: #fff;
         }
 
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
         }
 
         .shotclock-container {
-            height: 50px; /* Adjust the height as needed */
+            height: 50px;
             background-color: #f0f0f0;
             display: flex;
             align-items: center;
@@ -36,6 +39,7 @@
 
         .team-name, .score {
             font-weight: bold;
+            color: #004080;
         }
 
         .score-word {
@@ -44,18 +48,24 @@
 
         .button-container {
             margin-top: 20px;
-            margin-bottom: 30px;
+            text-align: left;
         }
 
         .button {
             padding: 10px;
-            background-color: gray;
+            background-color: #004080;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background-color: #002147;
         }
     </style>
 </head>
@@ -93,9 +103,6 @@
 
     <div class="button-container">
         <a href=summary class="button">Match Summary</a>
-    </div>
-
-    <div class="button-container">
         {% if url %}
             <a href="{{ url }}" target="_blank" class="button">Watch Live</a>
         {% endif %}
