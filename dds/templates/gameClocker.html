@@ -378,6 +378,7 @@
     var activeTimeout = {{ activeTimeout|lower }};
     var half = "{{ half }}";
     var url = "ws://" + window.location.host + "/ws/match/{{ matchId }}/";
+    var currentGameClock;
 
     const socket = new WebSocket(url);
     socket.onopen = function(event) {
@@ -463,6 +464,10 @@
         
         if (seconds < 10) {
             seconds = "0" + String(seconds);
+        }
+
+        if (!activeTimeout) {
+            currentGameClock = minutes + ":" + seconds;
         }
 
         document.getElementById("timer-text").innerHTML = minutes + ":" + seconds;
@@ -654,7 +659,8 @@
                     "matchId": {{ matchId }}, 
                     "match": '{{ match }}',                               
                     "half": half,
-                    "startTime": utcTimeString,                
+                    "startTime": utcTimeString, 
+                    "gameClockStart": currentGameClock,            
                 });
         } else if (request == "endpoint") {
             json = JSON.stringify({
@@ -663,7 +669,8 @@
                     "match": '{{ match }}',                                 
                     "winner": team,
                     "endTime": utcTimeString,
-                    "note": note,                
+                    "note": note,
+                    "gameClockEnd": currentGameClock,                 
                 });
         } else if (request == "timeout") {
             if (team == "Official") {
@@ -678,7 +685,8 @@
                     "match": '{{ match }}', 
                     "type": type,
                     "takenBy": team,
-                    "note": note,                
+                    "note": note,   
+                    "gameClockTime": currentGameClock,              
                 });
         }
 
