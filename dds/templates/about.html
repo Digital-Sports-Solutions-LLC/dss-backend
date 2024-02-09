@@ -5,42 +5,46 @@
 {% block content %}
 
 <style>
-    header.aboutUS {
+    header.aboutUs {
         text-align: center;
         padding: 5px;
         background-color: #f2f2f2;
     }
 
-    section.aboutUS {
+    section.aboutUs {
         max-width: 800px;
         margin: auto;
     }
 
-    h1.aboutUS {
+    h1.aboutUs {
         color: #333;
     }
 
-    p.aboutUS {
+    p.aboutUs {
         line-height: 1.6;
         color: #666;
     }
 
-    ul.aboutUS {
-        list-style-type: none;
+    ul.aboutUs {
+        list-style-type: square;
         padding: 0;
     }
 
-    li.aboutUS {
+    li.aboutUs {
         margin-bottom: 10px;
         padding: 5px;
         background-color: #f4f4f4;
         border-radius: 5px;
     }
+    p.indent {
+        line-height: 1.6;
+        color: #666;
+        text-indent: 30px;
+    }
 </style>
 <header class="aboutUs">
     <h1 class="aboutUs">About Us</h1>
 </header>
-<div class="aboutUs">
     <section class="aboutUs">
         <h2 class="aboutUs">Our Mission</h2>
         <p class="aboutUs">Welcome to Digital Sports Solutions LLC, where we are dedicated to revolutionizing the collegiate
@@ -53,13 +57,19 @@
         
         <h2 class="aboutUs">About the Team:</h2>
         <p class="aboutUs">Adam Flis (OSU #6):</p>
-        <ul class="aboutUs">
-            <li class="aboutUs">Founder & CEO of Digital Sports Solutions LLC</li>
-            <li class="aboutUs">Full Stack Developer at DSS</li>
-            <li class="aboutUs">Student at The Ohio State University</li>
-            <li class="aboutUs">Majoring in Computer Science and Engineering</li>
-            <li class="aboutUs">Minoring in Innovation and Entrepreneurship</li>
-        </ul>
+        <p class="indent">Founder & CEO of Digital Sports Solutions LLC</p>
+        <p class="indent">Full Stack Developer at DSS</p>
+        <p class="indent">Student at The Ohio State University</p>
+        <p class="indent">Majoring in Computer Science and Engineering</p>
+        <p class="indent">Minoring in Innovation and Entrepreneurship</p>
+
+        <p class="aboutUs">Michael Wilson:</p>
+        <p class="indent">Lead Full Stack Engineer for DSS</p>
+        <p class="indent">Coder and AI Trainer for RemoTasks</p>
+        <p class="indent">Ohio State University Alumni (2023)</p>
+        <p class="indent">Majored in Computer Information Systems</p>
+        <p class="indent">Minored in Music Production</p>
+
+
     </section>
-</div>
 {% endblock %}
