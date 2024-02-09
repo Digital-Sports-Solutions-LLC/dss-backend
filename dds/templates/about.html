@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+
+<style>
+    header.aboutUS {
+        text-align: center;
+        padding: 5px;
+        background-color: #f2f2f2;
+    }
+
+    section.aboutUS {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    h1.aboutUS {
+        color: #333;
+    }
+
+    p.aboutUS {
+        line-height: 1.6;
+        color: #666;
+    }
+
+    ul.aboutUS {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li.aboutUS {
+        margin-bottom: 10px;
+        padding: 5px;
+        background-color: #f4f4f4;
+        border-radius: 5px;
+    }
+</style>
+<header class="aboutUs">
+    <h1 class="aboutUs">About Us</h1>
+</header>
+<div class="aboutUs">
+    <section class="aboutUs">
+        <h2 class="aboutUs">Our Mission</h2>
+        <p class="aboutUs">Welcome to Digital Sports Solutions LLC, where we are dedicated to revolutionizing the collegiate
+         dodgeball experience through technology and a passion for innovation. Our mission is clear: to develop 
+         an exceptional app that enhances every aspect of the game, bringing together players, teams, and spectators 
+         in an unprecedented way. Collaborating closely with the National Collegiate Dodgeball Association (NCDA), we 
+         have harnessed their expertise and insights to create a solution tailored to the unique dynamics of collegiate dodgeball. 
+         Our app is not just a tool; it's a game-changer that aims to elevate the entire dodgeball community. Join us on this exciting 
+         journey as we redefine the future of collegiate dodgeball!</p>
+        
+        <h2 class="aboutUs">About the Team:</h2>
+        <p class="aboutUs">Adam Flis (OSU #6):</p>
+        <ul class="aboutUs">
+            <li class="aboutUs">Founder & CEO of Digital Sports Solutions LLC</li>
+            <li class="aboutUs">Full Stack Developer at DSS</li>
+            <li class="aboutUs">Student at The Ohio State University</li>
+            <li class="aboutUs">Majoring in Computer Science and Engineering</li>
+            <li class="aboutUs">Minoring in Innovation and Entrepreneurship</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
