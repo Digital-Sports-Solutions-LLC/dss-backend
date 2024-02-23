@@ -350,14 +350,33 @@
         socket.send(text);
     }
 
+    var previousSecond = null;
     function timer(startTime, endTime) {
         var diff = endTime - startTime;
         if (diff < 0) {
             diff = 0;
         }
+        
         var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
         document.getElementById("timer-text").innerHTML = seconds;
         document.getElementById("timer").value = seconds;
+
+        // Check if seconds is among the specified values for vibration
+        if (seconds !== previousSecond) {
+            if ((seconds === 10 || (seconds <= 5 && seconds > 0))) {
+                // Vibrate for 400 milliseconds
+                navigator.vibrate(400);
+            } else if (seconds === 0) {
+                // Vibrate for 2000 milliseconds
+                navigator.vibrate(2000);
+            } else {
+                // Vibrate for 100 milliseconds
+                navigator.vibrate(100);
+            }
+        }
+
+        previousSecond = seconds;
     }
 
     var intervalId = null;
@@ -381,6 +400,8 @@
             clearInterval(intervalId); // Pause the interval
             paused = true;            
         }
+        // Vibrate for 100 milliseconds
+        navigator.vibrate(100);
         updateServer();
     }
 
@@ -400,6 +421,8 @@
         if (paused) {
             undoTime = undoTime + (new Date().getTime() - timePaused);
             timePaused = currentTime;
+            // Vibrate for 100 milliseconds
+            navigator.vibrate(100);
         }
         timer(currentTime, endTime)
         updateServer();
