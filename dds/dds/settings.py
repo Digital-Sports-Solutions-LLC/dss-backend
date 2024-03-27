@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'match',
     'point',
     'timeout',
-    'rules'
+    'rules',
+    'bootstrap5'
 ]
 
 MIDDLEWARE = [
